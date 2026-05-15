@@ -1,0 +1,606 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+
+% ══════════════════════════════════════════════════════════════════════════
+% GEOMETRY
+% ══════════════════════════════════════════════════════════════════════════
+\geometry{a4paper, top=2cm, bottom=2cm, left=2cm, right=2cm, headheight=15pt}
+
+% ══════════════════════════════════════════════════════════════════════════
+% COLOR PALETTE
+% ══════════════════════════════════════════════════════════════════════════
+\definecolor{helixpurple}{HTML}{3C3489}
+\definecolor{helixpurplelight}{HTML}{EEEDFE}
+\definecolor{helixpurplemid}{HTML}{5A50B0}
+\definecolor{helixteal}{HTML}{0F6E56}
+\definecolor{helixteallight}{HTML}{E1F5EE}
+\definecolor{helixamber}{HTML}{7A4A00}
+\definecolor{helixamberlight}{HTML}{FDF3DC}
+\definecolor{helixgray}{HTML}{3A3A38}
+\definecolor{helixgraylight}{HTML}{F4F3EF}
+\definecolor{helixborder}{HTML}{CCCAC0}
+\definecolor{textprimary}{HTML}{1E1E1C}
+\definecolor{textsecondary}{HTML}{5A5958}
+
+% ══════════════════════════════════════════════════════════════════════════
+% TCOLORBOX STYLES
+% ══════════════════════════════════════════════════════════════════════════
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{infobox}[1][]{
+	enhanced, breakable,
+	colback=helixpurplelight, colframe=helixpurple,
+	fonttitle=\bfseries\small\color{helixpurple},
+	left=10pt, right=10pt, top=7pt, bottom=7pt,
+	arc=5pt, boxrule=0.6pt, #1
+}
+
+\newtcolorbox{successbox}[1][]{
+	enhanced, breakable,
+	colback=helixteallight, colframe=helixteal,
+	fonttitle=\bfseries\small\color{helixteal},
+	left=10pt, right=10pt, top=7pt, bottom=7pt,
+	arc=5pt, boxrule=0.6pt, #1
+}
+
+\newtcolorbox{warningbox}[1][]{
+	enhanced, breakable,
+	colback=helixamberlight, colframe=helixamber,
+	fonttitle=\bfseries\small\color{helixamber},
+	left=10pt, right=10pt, top=7pt, bottom=7pt,
+	arc=5pt, boxrule=0.6pt, #1
+}
+
+\newtcolorbox{sectionbox}[1][]{
+	enhanced, breakable,
+	colback=helixgraylight, colframe=helixborder,
+	left=10pt, right=10pt, top=7pt, bottom=7pt,
+	arc=5pt, boxrule=0.5pt, #1
+}
+
+% ══════════════════════════════════════════════════════════════════════════
+% SECTION STYLING
+% ══════════════════════════════════════════════════════════════════════════
+\titleformat{\chapter}[block]
+{\normalfont\LARGE\bfseries\color{helixpurple}}
+{\thechapter.}{12pt}{}
+[\vspace{3pt}\color{helixborder}\rule{\linewidth}{0.6pt}\vspace{6pt}]
+
+\titleformat{\section}
+{\normalfont\large\bfseries\color{helixgray}}
+{\thesection}{10pt}{}
+
+\titleformat{\subsection}
+{\normalfont\normalsize\bfseries\color{textsecondary}}
+{\thesubsection}{8pt}{}
+
+\titlespacing*{\chapter}{0pt}{10pt}{22pt}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{5pt}
+
+% ══════════════════════════════════════════════════════════════════════════
+% HEADER / FOOTER
+% ══════════════════════════════════════════════════════════════════════════
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{textsecondary}\scshape{HELIX Platform}}
+\fancyhead[R]{\small\color{textsecondary}Software Requirements Specification}
+\fancyfoot[C]{\small\color{textsecondary}\thepage}
+\fancyfoot[R]{\small\color{textsecondary}2025--2026}
+
+% ══════════════════════════════════════════════════════════════════════════
+% TABLE COLUMN TYPES
+% ══════════════════════════════════════════════════════════════════════════
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ══════════════════════════════════════════════════════════════════════════
+% HYPERREF
+% ══════════════════════════════════════════════════════════════════════════
+\hypersetup{
+	colorlinks=true,
+	linkcolor=helixpurple,
+	urlcolor=helixteal,
+	citecolor=helixgray,
+	pdftitle={HELIX -- Software Requirements Specification (PoC)},
+	pdfauthor={Yasseene},
+	pdfsubject={PoC Cybersecurity Platform SRS}
+}
+
+\setlist[itemize]{leftmargin=1.5em, itemsep=4pt, topsep=5pt}
+\setlist[enumerate]{leftmargin=1.7em, itemsep=4pt, topsep=5pt}
+
+\begin{document}
+	\setstretch{1.25}
+	
+	% ── Cover Page ────────────────────────────────────────────────────────────
+	\begin{titlepage}
+		\thispagestyle{empty}
+		\noindent\colorbox{helixpurple}{%
+			\parbox{\dimexpr\textwidth+2\fboxsep\relax}{%
+				\vspace{10pt}
+				\hspace{8pt}\textcolor{white}{\small\scshape{Software Requirements Specification --- PoC Version}}%
+				\vspace{10pt}
+			}%
+		}
+		\vspace{3cm}
+		\begin{center}
+			{\fontsize{52}{60}\selectfont\bfseries\color{helixpurple} HELIX}\\[10pt]
+			{\Large\color{textsecondary}Cybersecurity Operations Platform -- Proof of Concept}\\[8pt]
+			{\normalsize\color{helixpurplemid}\textit{Blue Team Monitoring $\cdot$ AI-Assisted Analysis $\cdot$ ML Anomaly Detection}}\\[30pt]
+			\color{helixborder}\rule{0.65\textwidth}{0.5pt}\\[30pt]
+		\end{center}
+		\begin{center}
+			\begin{tabular}{L{5.2cm} L{7.5cm}}
+				\toprule
+				\textbf{Document Type}    & Software Requirements Specification (SRS) \\
+				\midrule
+				\textbf{Project Phase}    & Proof of Concept (PoC) \\
+				\textbf{Document Version} & 1.0 \\
+				\textbf{Academic Year}    & 2025 -- 2026 \\
+				\textbf{Author}           & Yasseene \\
+				\textbf{Status}           & Final \\
+				\textbf{Classification}   & Academic --- Confidential \\
+				\bottomrule
+			\end{tabular}
+		\end{center}
+		\vfill
+		\begin{infobox}[title=Executive Summary]
+			HELIX is a modular cybersecurity platform that unifies defensive monitoring,
+			AI-assisted threat analysis, and machine learning anomaly detection. This SRS
+			defines the requirements for the Proof of Concept (PoC) stage, covering
+			authentication, log ingestion, alert visualization, ML scoring, AI assistance,
+			and one Red Team tool integration.
+		\end{infobox}
+		\vspace{1cm}
+		\noindent\colorbox{helixgraylight}{%
+			\parbox{\dimexpr\textwidth+2\fboxsep\relax}{%
+				\vspace{8pt}
+				\hspace{8pt}\small\color{textsecondary}%
+				Tek-Up University \hfill Ariana, Tunisia \hfill Academic Year 2025--2026
+				\vspace{8pt}
+			}%
+		}
+	\end{titlepage}
+	
+	% ── Revision History ──────────────────────────────────────────────────────
+	\chapter*{Revision History}
+	\addcontentsline{toc}{chapter}{Revision History}
+	\thispagestyle{fancy}
+	\begin{center}
+		\begin{tabular}{C{1.5cm} C{2.5cm} L{4.5cm} L{4.5cm}}
+			\toprule
+			\textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
+			\midrule
+			1.0 & May 2026 & Yasseene & PoC SRS -- Core requirements and scope definition \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	\clearpage
+	
+	{
+		\hypersetup{linkcolor=black}
+		\tableofcontents
+		\thispagestyle{empty}
+	}
+	\clearpage
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\chapter{Project Presentation}
+	% ══════════════════════════════════════════════════════════════════════════
+	
+	\section{Project Identity}
+	\begin{sectionbox}
+		\begin{tabular}{L{4.2cm} L{9.3cm}}
+			\textbf{Project Name} & HELIX \\[4pt]
+			\textbf{Subtitle} & Cybersecurity Operations Platform -- Proof of Concept \\[4pt]
+			\textbf{Application Type} & Modular web application with service-oriented components \\[4pt]
+			\textbf{Domain} & Cybersecurity, Machine Learning, Artificial Intelligence \\[4pt]
+			\textbf{Keywords} & SIEM, Blue Team, Red Team, ML Anomaly Detection, AI Assistant \\[4pt]
+			\textbf{Institution} & Tek-Up University, Ariana, Tunisia \\
+		\end{tabular}
+	\end{sectionbox}
+	
+	\vspace{10pt}
+	HELIX takes its name from the DNA double helix: two strands -- offensive (Red) and defensive (Blue) -- that together form a more capable whole. The PoC demonstrates the foundational capabilities of this unified platform.
+	
+	\section{Technology Stack}
+	\begin{center}
+		\begin{tabular}{L{3.5cm} L{4.5cm} L{5.0cm}}
+			\toprule
+			\textbf{Layer} & \textbf{Technology} & \textbf{Role} \\
+			\midrule
+			Frontend & HTML5 / CSS3 / JavaScript & User interface and visualization \\
+			Backend / API & PHP & REST API, authentication, business logic \\
+			Database & MySQL (XAMPP) & Data persistence and querying \\
+			ML Service & Python (scikit-learn) & Isolation Forest anomaly detection \\
+			Java Module & Java JDK & Hash scanning and log parsing \\
+			AI Integration & OpenAI API & Alert explanation and analysis \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	
+	\section{PoC Scope}
+	The PoC validates core platform viability through seven deliverable modules:
+	\begin{enumerate}
+		\item Authentication with role-based access control (Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner, Visitor)
+		\item Centralized security dashboard with key metrics
+		\item Manual log ingestion and parsing
+		\item Alert visualization with severity classification
+		\item ML-based anomaly scoring using Isolation Forest
+		\item AI-powered assistant for alert explanation
+		\item One Red Team tool integration (network port scanner)
+	\end{enumerate}
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\chapter{Context and Problem Statement}
+	% ══════════════════════════════════════════════════════════════════════════
+	
+	\section{Industry Context}
+	Global cybercrime costs continue to rise exponentially, yet security education and training lack affordable, integrated environments where students and professionals can practice both defensive and offensive security in a single platform.
+	
+	\section{Core Problem Statement}
+	\begin{warningbox}[title=Central Problem]
+		How to design and implement a unified, accessible cybersecurity platform that combines threat monitoring, AI-assisted analysis, and machine learning anomaly detection for academic and training purposes?
+	\end{warningbox}
+	
+	\section{Limitations of Existing Solutions}
+	\begin{longtable}{L{3.0cm} L{4.0cm} L{3.5cm} C{2.0cm}}
+		\toprule
+		\textbf{Solution} & \textbf{Strengths} & \textbf{Limitations} & \textbf{Cost} \\
+		\midrule
+		Splunk & Mature SIEM, rich integrations & High cost, complex & Very High \\
+		Wazuh & Open source, agent-based & Steep learning curve & Free \\
+		Elastic SIEM & Scalable, performant & No AI/ML built-in & Freemium \\
+		\textbf{HELIX (PoC)} & \textbf{Unified, AI-native, academic} & \textbf{Early stage} & \textbf{Free} \\
+		\bottomrule
+		\caption{Comparison of Existing Security Platforms}
+	\end{longtable}
+	
+	\section{HELIX Positioning}
+	\begin{enumerate}
+		\item \textbf{Unified Platform:} Combines Blue Team monitoring, Red Team tools, and AI assistance in one interface.
+		\item \textbf{AI-Native:} Integrates machine learning anomaly detection and LLM-powered analysis from the ground up.
+		\item \textbf{Academic Focus:} Designed for learning, demonstration, and research with accessible architecture.
+	\end{enumerate}
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\chapter{Project Objectives}
+	% ══════════════════════════════════════════════════════════════════════════
+	
+	\section{General Objective}
+	Develop a functional proof-of-concept for a modular cybersecurity platform that demonstrates log ingestion, anomaly detection, AI-assisted analysis, and role-based access control within a unified web interface.
+	
+	\section{Functional Objectives}
+	\begin{itemize}
+		\item Implement user authentication with six access levels (Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner, Visitor)
+		\item Build a centralized dashboard displaying security metrics and alert summaries
+		\item Enable manual log file upload and structured parsing
+		\item Visualize security alerts with severity-based classification
+		\item Apply Isolation Forest ML model to detect anomalous log patterns
+		\item Integrate OpenAI API for natural language alert explanation
+		\item Implement one Red Team tool (network port scanner) with controlled access
+	\end{itemize}
+	
+	\section{Academic Objectives}
+	\begin{itemize}
+		\item Demonstrate full software engineering lifecycle (requirements to implementation)
+		\item Produce complete UML diagrams (Use Case, Class, Sequence, Component, Deployment)
+		\item Showcase multi-language integration (PHP, Python, Java, JavaScript)
+		\item Deliver a demonstrable portfolio piece for academic evaluation
+	\end{itemize}
+	
+	\section{Non-Functional Objectives}
+	\begin{itemize}
+		\item Modular architecture supporting future MVP expansion
+		\item Clean, maintainable code following established conventions
+		\item Secure authentication with password hashing and session management
+		\item Responsive interface functional at standard desktop resolutions
+		\item Comprehensive documentation for academic submission
+	\end{itemize}
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\chapter{User Roles and System Actors}
+	% ══════════════════════════════════════════════════════════════════════════
+	
+	\section{Actor Overview}
+	HELIX defines one abstract generalization actor (\textbf{Authenticated User}), five concrete human actors, one unauthenticated actor, and one secondary system actor:
+	
+	\begin{figure}[H]
+		\centering
+		\begin{sectionbox}
+			\begin{tabular}{C{3.2cm} C{4.0cm} C{2.8cm} C{2.2cm}}
+				\toprule
+				\textbf{Actor} & \textbf{Profile} & \textbf{Access Level} & \textbf{Type} \\
+				\midrule
+				\textit{Authenticated User} & \textit{Abstract (generalization)} & \textit{Common auth. capabilities} & --- \\
+				\midrule
+				Administrator & Platform manager & Full access to all modules & Primary \\
+				Blue Team Operator & SOC analyst & Monitoring, alerts, AI, logs & Primary \\
+				Red Team Operator & Penetration tester & Offensive tools, scans, results & Primary \\
+				Purple Team Operator & Hybrid operator & Blue + Red combined view & Primary \\
+				Learner & Authenticated student & Learning materials, notes, progress & Primary \\
+				Visitor & Unauthenticated user & Public content, registration & Primary \\
+				Detection Engine & Autonomous system & ML scoring, alert generation & Secondary \\
+				\bottomrule
+			\end{tabular}
+		\end{sectionbox}
+		\caption{HELIX PoC Actor Summary}
+	\end{figure}
+	
+	The conceptual hierarchy is:
+	\texttt{Visitor} (unauthenticated); \texttt{Authenticated User} $\rightarrow$ \texttt{Administrator},
+	\texttt{Blue Team Operator}, \texttt{Red Team Operator}, \texttt{Purple Team Operator}, \texttt{Learner};
+	and \texttt{Purple Team Operator} inherits from both \texttt{Blue Team Operator} and \texttt{Red Team Operator}.
+	
+	\section{Detailed Actor Descriptions}
+	
+	\subsection{Actor A0 -- Authenticated User (Abstract)}
+	\begin{infobox}[title=Authenticated User]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Abstract generalization; no real user holds this role directly. \\
+			\textbf{Purpose} & Factors out use cases shared by all authenticated roles: \\
+			& \texttt{Log In}, \texttt{Manage Profile}, \texttt{Use AI Assistant}, \\
+			& \texttt{Search Knowledge Base}, \texttt{Publish Article}, \texttt{Subscribe}. \\
+			\textbf{Inheritance} & Specialized by Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner. \\
+		\end{tabular}
+	\end{infobox}
+	\textit{All concrete actors inheriting from Authenticated User can perform the above use cases, unless overridden by role restrictions. The abstract actor itself never logs in—the concrete specializations do.}
+	
+	\subsection{Actor A1 -- Administrator}
+	\begin{infobox}[title=Administrator]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Platform and user management authority \\
+			\textbf{Profile} & System administrator, CISO, course supervisor, developer \\
+			\textbf{Technical Level} & Expert \\
+			\textbf{Permissions} & Full access to all modules; user account management; system configuration; log management; alert oversight; AI assistant; Red Team tools; ML model management; detection rule authoring \\
+			\textbf{Core Needs} & Monitor platform health, manage users and roles, oversee all security operations, configure system settings, maintain detection rules \\
+		\end{tabular}
+	\end{infobox}
+	
+	\subsection{Actor A2 -- Blue Team Operator}
+	\begin{infobox}[title=Blue Team Operator]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Defensive security monitoring and incident analysis \\
+			\textbf{Profile} & SOC analyst, cybersecurity student, security operator \\
+			\textbf{Technical Level} & Intermediate \\
+			\textbf{Permissions} & Dashboard access; log ingestion and viewing; alert filtering and status updates; AI assistant for alert explanation; ML anomaly score consultation; report viewing \\
+			\textbf{Core Needs} & Identify real threats from noise, understand alert context with AI assistance, track anomaly patterns, manage incident lifecycle, generate security reports \\
+		\end{tabular}
+	\end{infobox}
+	
+	\subsection{Actor A3 -- Red Team Operator}
+	\begin{infobox}[title=Red Team Operator]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Offensive security testing and tool execution \\
+			\textbf{Profile} & Penetration tester, security researcher, CTF player \\
+			\textbf{Technical Level} & Advanced \\
+			\textbf{Permissions} & Red Team tool access (port scanner, hash scanning); scan result viewing and management; OSINT queries; writeup publication; AI assistant for technique explanation \\
+			\textbf{Core Needs} & Execute security tools from unified interface, persist and share scan results, document techniques and findings, correlate offensive results with defensive alerts \\
+		\end{tabular}
+	\end{infobox}
+	
+	\subsection{Actor A4 -- Purple Team Operator}
+	\begin{infobox}[title=Purple Team Operator]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Cross-team coordination and detection coverage optimization (inherits Blue + Red capabilities) \\
+			\textbf{Profile} & Senior security engineer, team lead, hybrid operator \\
+			\textbf{Technical Level} & Expert \\
+			\textbf{Permissions} & Combined Blue + Red Team capabilities; cross-correlation queries; detection rule modification; collaborative incident management; consolidated dashboard view; findings sharing between teams \\
+			\textbf{Core Needs} & Visualize detection coverage, identify blind spots between offensive and defensive operations, improve detection playbooks, correlate Red Team findings with Blue Team alerts \\
+		\end{tabular}
+	\end{infobox}
+	
+	\subsection{Actor A5 -- Learner}
+	\begin{infobox}[title=Learner]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Authenticated student and self-paced learner \\
+			\textbf{Profile} & Student, early-career professional, cybersecurity enthusiast \\
+			\textbf{Technical Level} & Beginner to Intermediate \\
+			\textbf{Permissions} & Access learning materials; manage personal notes; track learning progress; participate in guided exercises; AI assistant (learning mode); read-only alert and dashboard viewing \\
+			\textbf{Core Needs} & Document learning journey, save notes on security concepts, measure progress through platform activities, practice in safe hands-on environment, receive AI-guided explanations \\
+		\end{tabular}
+	\end{infobox}
+	
+	\subsection{Actor A6 -- Visitor (Unauthenticated)}
+	\begin{infobox}[title=Visitor]
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Role} & Unauthenticated public access \\
+			\textbf{Profile} & General public, potential learner, recruiter, evaluator \\
+			\textbf{Technical Level} & Any \\
+			\textbf{Permissions} & Browse public content; view platform overview; register for an account; log in to access authenticated features \\
+			\textbf{Core Needs} & Discover platform capabilities, understand HELIX features, register to become a Learner or request elevated access \\
+		\end{tabular}
+	\end{infobox}
+	
+	\subsection{Actor A7 -- Detection Engine (Secondary System Actor)}
+	\begin{sectionbox}
+		\begin{tabular}{L{3.8cm} L{8.8cm}}
+			\textbf{Type} & Non-human autonomous software component (secondary actor) \\
+			\textbf{Description} & Triggered on log ingestion or scheduled intervals; performs ML anomaly scoring using Isolation Forest model and generates alerts based on severity thresholds \\
+			\textbf{Interactions} & Receives parsed log entries from PHP backend; computes anomaly scores; stores results in MySQL; triggers alert creation for HIGH/CRITICAL findings; notifies Blue Team Operator and Administrator of critical events \\
+		\end{tabular}
+	\end{sectionbox}
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\chapter{Functional and Non-Functional Requirements}
+	% ══════════════════════════════════════════════════════════════════════════
+	
+	\section{Functional Requirements}
+	
+	\subsection{Module 1 -- Authentication and Access Control}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-001 & User login with username and password verification against MySQL database. & H & PoC \\
+		FR-002 & Password hashing using bcrypt before storage. & H & PoC \\
+		FR-003 & PHP session management with role-based access enforcement. & H & PoC \\
+		FR-004 & Six roles: Administrator (full), Blue Team Operator (defensive), Red Team Operator (offensive), Purple Team Operator (hybrid), Learner (learning), Visitor (public). & H & PoC \\
+		FR-005 & Session timeout and logout functionality. & M & PoC \\
+		FR-006 & Protected API endpoints returning HTTP 403 for unauthorized access. & H & PoC \\
+		FR-007 & Visitor can register for a Learner account. & H & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- Authentication}
+	\end{longtable}
+	
+	\subsection{Module 2 -- Dashboard}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-010 & Display total active alerts grouped by severity (Critical, High, Medium, Low). & H & PoC \\
+		FR-011 & Show total ingested log count and recent log activity. & H & PoC \\
+		FR-012 & Display ML anomaly score summary (average, distribution). & M & PoC \\
+		FR-013 & Visual charts for alert trends over time. & M & PoC \\
+		FR-014 & Role-based dashboard content (Visitor sees login page; Learner sees learning-oriented view; Purple Team Operator sees consolidated Blue+Red view). & H & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- Dashboard}
+	\end{longtable}
+	
+	\subsection{Module 3 -- Log Ingestion}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-020 & Upload log files (CSV, TXT) via web interface. & H & PoC \\
+		FR-021 & Parse log entries and store in MySQL with structured fields (timestamp, source, severity, message). & H & PoC \\
+		FR-022 & Validate file format and reject malformed uploads. & H & PoC \\
+		FR-023 & Display ingestion status and processed entry count. & M & PoC \\
+		FR-024 & Trigger ML anomaly scoring after successful ingestion. & M & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- Log Ingestion}
+	\end{longtable}
+	
+	\subsection{Module 4 -- Alert Visualization}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-030 & List all security alerts with severity, timestamp, and description. & H & PoC \\
+		FR-031 & Filter alerts by severity level and date range. & H & PoC \\
+		FR-032 & Color-coded severity indicators (Critical=red, High=orange, Medium=yellow, Low=green). & H & PoC \\
+		FR-033 & Update alert status (Open, Investigating, Resolved) -- Blue Team Operator, Purple Team Operator, and Administrator only. & M & PoC \\
+		FR-034 & View alert details including associated log entry and anomaly score. & M & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- Alert Visualization}
+	\end{longtable}
+	
+	\subsection{Module 5 -- ML Anomaly Detection}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-040 & Python script using Isolation Forest (scikit-learn) to score log anomalies. & H & PoC \\
+		FR-041 & Features: event frequency, error rate, time-of-day distribution, source IP diversity. & H & PoC \\
+		FR-042 & Anomaly scores mapped to severity levels (LOW, MEDIUM, HIGH, CRITICAL). & H & PoC \\
+		FR-043 & PHP backend invokes Python script and stores results in MySQL. & H & PoC \\
+		FR-044 & Display anomaly scores in dashboard and alert views. & M & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- ML Anomaly Detection}
+	\end{longtable}
+	
+	\subsection{Module 6 -- AI Assistant}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-050 & Chat interface for querying about specific alerts or log entries. & H & PoC \\
+		FR-051 & PHP backend forwards alert context to OpenAI API and returns explanation. & H & PoC \\
+		FR-052 & AI provides remediation suggestions based on alert type and severity. & H & PoC \\
+		FR-053 & Display conversation history within the session. & M & PoC \\
+		FR-054 & Accessible to Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, and Learner roles. & H & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- AI Assistant}
+	\end{longtable}
+	
+	\subsection{Module 7 -- Red Team Tool}
+	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-060 & Network port scanner: input target IP/hostname and scan for open ports. & H & PoC \\
+		FR-061 & Display scan results with port number, protocol, and status (open/closed/filtered). & H & PoC \\
+		FR-062 & Persist scan results in MySQL for future reference. & M & PoC \\
+		FR-063 & Accessible to Administrator, Red Team Operator, and Purple Team Operator roles only. & H & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- Red Team Tool}
+	\end{longtable}
+	
+	\section{Non-Functional Requirements}
+	
+	\subsection{Performance}
+	\begin{itemize}
+		\item \textbf{NFR-001}: Dashboard loads within 2 seconds for up to 1,000 log entries.
+		\item \textbf{NFR-002}: ML anomaly scoring completes within 5 seconds for batch of 500 entries.
+		\item \textbf{NFR-003}: Log file upload and parsing completes within 10 seconds for files up to 5 MB.
+		\item \textbf{NFR-004}: AI assistant response returns within 8 seconds.
+	\end{itemize}
+	
+	\subsection{Security}
+	\begin{itemize}
+		\item \textbf{NFR-010}: Passwords hashed with bcrypt (cost factor $\geq$ 10).
+		\item \textbf{NFR-011}: PHP sessions with secure cookie flags.
+		\item \textbf{NFR-012}: Input validation and sanitization on all user inputs.
+		\item \textbf{NFR-013}: SQL injection prevention via prepared statements (PDO).
+		\item \textbf{NFR-014}: Role-based access enforced on every API endpoint.
+	\end{itemize}
+	
+	\subsection{Maintainability}
+	\begin{itemize}
+		\item \textbf{NFR-020}: Modular file structure with clear separation of concerns.
+		\item \textbf{NFR-021}: Consistent naming conventions across all languages.
+		\item \textbf{NFR-022}: Documented API endpoints with input/output specifications.
+		\item \textbf{NFR-023}: Configuration files separated from application logic.
+	\end{itemize}
+	
+	\subsection{Usability}
+	\begin{itemize}
+		\item \textbf{NFR-030}: Interface functional at 1280x720 minimum resolution.
+		\item \textbf{NFR-031}: Severity-based color coding consistent across all views.
+		\item \textbf{NFR-032}: Clear error messages for failed operations.
+		\item \textbf{NFR-033}: Intuitive navigation between modules.
+	\end{itemize}
+	
+	\subsection{Deployability}
+	\begin{itemize}
+		\item \textbf{NFR-040}: Runs on XAMPP (Apache + MySQL + PHP) without additional infrastructure.
+		\item \textbf{NFR-041}: Python ML service runs as standalone script invoked by PHP.
+		\item \textbf{NFR-042}: Database schema provided as importable SQL file.
+		\item \textbf{NFR-043}: Configuration via editable config files (no environment variable dependency for PoC).
+	\end{itemize}
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\chapter*{Conclusion}
+	\addcontentsline{toc}{chapter}{Conclusion}
+	\begin{successbox}[title=Document Summary]
+		This SRS defines the requirements for the HELIX Proof of Concept. It covers
+		the project presentation, context and problem statement, objectives, user
+		roles, and all functional and non-functional requirements. The PoC scope is
+		deliberately focused to ensure a strong, demonstrable academic deliverable
+		within a 3-day timeline, while maintaining a modular architecture that
+		supports future MVP evolution.
+	\end{successbox}
+	
+\end{document}

@@ -1,0 +1,145 @@
+@startuml usecase_overview
+title HELIX Platform – Use Case Diagram (Global Overview)
+left to right direction
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 12
+skinparam packageStyle rectangle
+skinparam nodesep 24
+skinparam ranksep 30
+skinparam dpi 160
+skinparam defaultTextAlignment center
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #3C3489
+skinparam usecaseFontColor #1E1E1C
+skinparam actorBorderColor #0F6E56
+skinparam actorFontColor #1E1E1C
+skinparam packageBorderColor #CCCAC0
+skinparam packageBackgroundColor #F8F7F4
+skinparam ArrowColor #5A50B0
+
+' ============================================
+' PRIMARY ACTORS (roles)
+' ============================================
+actor "Visitor" as Visitor
+actor "Authenticated User" as AuthUser
+actor "Administrator" as Admin #c5c5ca
+actor "Blue Team Operator" as Blue #0d0ca9
+actor "Red Team Operator" as Red #b71717
+actor "Purple Team Operator" as Purple #8d2cd2
+actor "Learner" as Learner
+
+' Actor inheritance – explicit and maintainable
+Admin --|> AuthUser
+Blue --|> AuthUser
+Red --|> AuthUser
+Purple --|> Blue
+Purple --|> Red
+Learner --|> AuthUser
+
+note top of Purple
+  Inherits all Blue and Red
+  capabilities
+end note
+
+' ============================================
+' SYSTEM BOUNDARY
+' ============================================
+rectangle "HELIX Platform" as System {
+
+    package "Access Control" {
+        usecase "Register Account" as UC_Register
+        usecase "Log In" as UC_Login
+        usecase "Manage Profile" as UC_Profile
+        usecase "Manage Users" as UC_ManageUsers
+        usecase "Configure System" as UC_Configure
+        usecase "Subscribe" as UC_Subscribe
+    }
+
+    package "Security Operations" #E8F4FD {
+        usecase "View Security Dashboard" as UC_SecurityDashboard #E8F4FD
+        usecase "Monitor Security Events" as UC_Monitor #E8F4FD
+        usecase "Manage Incidents" as UC_Incidents #E8F4FD
+        usecase "Generate Report" as UC_Report #E8F4FD
+    }
+
+    package "Detection Pipeline" {
+        usecase "Automated Detection" as UC_AutoDetection
+    }
+
+    package "Red Team Orchestration" #FFE0E6 {
+        usecase "Run Reconnaissance" as UC_Recon #FFE0E6
+        usecase "Launch Exploitation" as UC_Exploit #FFE0E6
+        usecase "Post-Exploitation Lab" as UC_Post #FFE0E6
+        usecase "Create a Writeup" as UC_Writeup #FFE0E6
+    }
+
+    package "Collaboration & Knowledge Base" #F0E6FF {
+        usecase "Browse Public Content" as UC_PublicContent #F0E6FF
+        usecase "Search Knowledge Base" as UC_SearchKB #F0E6FF
+        usecase "Publish Article" as UC_Publish #F0E6FF
+        usecase "Collaborate on Incidents" as UC_Collaborate #F0E6FF
+        usecase "Share Findings" as UC_Share #F0E6FF
+        usecase "Moderate Knowledge Base" as UC_ModerateKB #F0E6FF
+    }
+
+    package "Learner Workspace" #FFF8DC {
+        usecase "Study with Premium materials" as UC_Study #FFF3DC
+        usecase "Participate in Events" as UC_Events #FFF3DC
+    }
+
+    package "AI Assistance" #D4F5D6 {
+        usecase "Use AI Assistant" as UC_AI #D4F5D6
+    }
+}
+
+' ============================================
+' SECONDARY ACTOR (outside system)
+' ============================================
+rectangle "Detection Engine" as Engine <<system>>
+note right of Engine
+  Triggered by scheduled jobs
+  or event streams
+end note
+
+' ============================================
+' ACTOR – USE CASE LINKS (no include/extend)
+' ============================================
+Visitor --> UC_Register
+Visitor --> UC_Login
+Visitor --> UC_PublicContent
+
+AuthUser --> UC_Login
+AuthUser --> UC_Profile
+AuthUser --> UC_SearchKB
+AuthUser --> UC_Publish
+AuthUser --> UC_AI
+AuthUser --> UC_Subscribe
+
+Admin --> UC_ManageUsers
+Admin --> UC_Configure
+Admin --> UC_SecurityDashboard
+Admin --> UC_ModerateKB
+Admin --> UC_Report
+
+Blue --> UC_SecurityDashboard
+Blue --> UC_Monitor
+Blue --> UC_Incidents
+Blue --> UC_Report
+
+Red --> UC_Recon
+Red --> UC_Post
+Red --> UC_Writeup
+Red --> UC_Exploit
+
+Purple --> UC_Collaborate
+Purple --> UC_Share
+' (inherits Blue and Red access – shown already via generalization)
+
+Learner --> UC_Study
+Learner --> UC_Events
+
+Engine --> UC_AutoDetection
+
+@enduml
