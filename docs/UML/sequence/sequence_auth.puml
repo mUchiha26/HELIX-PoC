@@ -1,0 +1,162 @@
+@startuml sequence_auth
+title HELIX Platform – Authentication & Session Management (UC-01 / UC-02)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 120
+skinparam shadowing false
+skinparam linetype ortho
+skinparam ArrowColor #3C3489
+skinparam ParticipantBorderColor #3C3489
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantFontColor #3C3489
+skinparam ParticipantFontSize 12
+skinparam ActorBorderColor #3C3489
+skinparam ActorBackgroundColor #FFFFFF
+skinparam ActorFontColor #3C3489
+skinparam LifeLineBorderColor #5A50B0
+skinparam LifeLineBackgroundColor #EEEDFE
+skinparam BoxPadding 10
+skinparam BoxBorderColor #CCCAC0
+skinparam BoxBackgroundColor #F8F7F4
+
+actor "Visitor / User" as user
+participant "View\n(HTML/CSS/JS)" as view
+participant "Controller\n(AuthController)" as ctrl
+participant "Model\n(UserModel, SessionModel)" as model
+database "MySQL\n(users, sessions)" as db
+
+== UC-02: Log In ==
+
+user -> view : Enter username + password
+activate view
+
+view -> ctrl : POST /auth/login\n{username, password}
+activate ctrl
+
+ctrl -> ctrl : Validate input format
+
+alt Invalid input format
+    ctrl --> view : 400 Bad Request\n{error: "Invalid credentials"}
+    view --> user : Display inline validation error
+else Input valid
+    ctrl -> model : getUserByUsername(username)
+    activate model
+
+    model -> db : SELECT id, username, password_hash, role\nWHERE username = ?
+    activate db
+    db --> model : Return user record
+    deactivate db
+
+    model --> ctrl : User entity or null
+    deactivate model
+
+    alt Account deactivated
+        ctrl --> view : 403 Forbidden\n{error: "Account deactivated"}
+        view --> user : Display access denied
+    else Account active
+        ctrl -> ctrl : password_verify(password, password_hash)\n(bcrypt comparison)
+
+        alt Password mismatch
+            ctrl --> view : 401 Unauthorized\n{error: "Invalid credentials"}
+            view --> user : Display login error
+        else Password matches
+            ctrl -> model : createSession(user_id)
+            activate model
+
+            model -> model : Generate session token\n(session_id, expires_at)
+
+            model -> db : INSERT INTO sessions\n(session_id, user_id, token, expires_at)
+            activate db
+            db --> model : OK
+            deactivate db
+
+            model --> ctrl : Session entity
+            deactivate model
+
+            ctrl --> view : 200 OK\n{session_id, role, redirect_url}
+            view --> user : Redirect to role-specific dashboard
+        end
+    end
+end
+
+deactivate ctrl
+deactivate view
+
+== UC-01: Register Account ==
+
+user -> view : Open registration form
+activate view
+
+view -> ctrl : POST /auth/register\n{username, email, password}
+activate ctrl
+
+ctrl -> model : validateRegistration(data)
+activate model
+
+model -> model : Check unique username,\nemail format, password strength
+
+alt Username already exists
+    model --> ctrl : ValidationException("Username taken")
+    ctrl --> view : 409 Conflict\n{error: "Username taken"}
+    view --> user : Display duplicate username error
+else Password too weak
+    model --> ctrl : ValidationException("Weak password")
+    ctrl --> view : 400 Bad Request\n{error: "Password requirements not met"}
+    view --> user : Display password strength message
+else Email already in use
+    model --> ctrl : ValidationException("Email registered")
+    ctrl --> view : 409 Conflict\n{error: "Email already registered"}
+    view --> user : Display duplicate email error
+else All validations pass
+    model -> model : hashPassword(password, BCRYPT)
+
+    model -> db : INSERT INTO users\n(username, email, password_hash, role='learner')
+    activate db
+    db --> model : OK (new user_id)
+    deactivate db
+
+    model --> ctrl : User entity
+    deactivate model
+
+    ctrl --> view : 201 Created\n{message: "Registration successful"}
+    view --> user : Display success, redirect to login
+end
+
+deactivate ctrl
+deactivate view
+
+== Session Validation (Subsequent Requests) ==
+
+user -> view : Navigate to protected page
+activate view
+
+view -> ctrl : GET /dashboard\nCookie: PHPSESSID=xxx
+activate ctrl
+
+ctrl -> model : validateSession(session_id)
+activate model
+
+model -> db : SELECT * FROM sessions\nWHERE session_id = ? AND expires_at > NOW()
+activate db
+
+alt Session valid
+    db --> model : Return session with user_id, role
+    deactivate db
+    model --> ctrl : Session entity + User entity
+    deactivate model
+    ctrl --> view : 200 OK + dashboard data
+    view --> user : Render role-appropriate dashboard
+else Session expired or invalid
+    db --> model : No matching session
+    deactivate db
+    model --> ctrl : null
+    deactivate model
+    ctrl --> view : 401 Unauthorized
+    view --> user : Redirect to login page
+end
+
+deactivate ctrl
+deactivate view
+
+@enduml

@@ -1,0 +1,197 @@
+@startuml sequence_ai_assistant
+title HELIX Platform – AI Assistant Integration (UC-31 → UC-32 → UC-33)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 140
+skinparam shadowing false
+skinparam linetype ortho
+skinparam ArrowColor #3C3489
+skinparam ParticipantBorderColor #3C3489
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantFontColor #3C3489
+skinparam ParticipantFontSize 11
+skinparam LifeLineBorderColor #5A50B0
+skinparam LifeLineBackgroundColor #EEEDFE
+skinparam BoxPadding 10
+skinparam BoxBorderColor #CCCAC0
+skinparam BoxBackgroundColor #F8F7F4
+
+actor "Authenticated\nUser" as user
+participant "View\n(HTML/CSS/JS)" as view
+participant "Controller\n(AIController)" as ctrl
+participant "Model\n(ChatSessionModel,\nAlertModel, AIService)" as model
+database "MySQL\n(chat_sessions, chat_messages,\nalerts, log_entries)" as db
+participant "OpenAI\nAPI" as openai
+
+== UC-31: Use AI Assistant (Alert Context) ==
+
+user -> view : Click AI Assistant icon\nfrom alert or incident view
+activate view
+
+view -> ctrl : GET /ai/session?alert_id=123
+activate ctrl
+
+ctrl -> model : getOrCreateSession(user_id, alert_id)
+activate model
+
+model -> db : SELECT * FROM chat_sessions\nWHERE user_id = ? AND alert_id = 123
+activate db
+
+alt Existing session found
+    db --> model : Return chat_session with history
+else No existing session
+    model -> db : INSERT INTO chat_sessions\n(user_id, alert_id, context, created_at)
+    db --> model : new session_id
+end
+deactivate db
+
+model --> ctrl : Session entity
+deactivate model
+
+ctrl --> view : 200 OK\n{session_id, conversation_history, alert_context}
+deactivate ctrl
+
+view --> user : Render AI Assistant panel\nwith alert context pre-loaded
+deactivate view
+
+user -> view : Submit query\n(e.g., "What does this alert mean?")
+activate view
+
+view -> ctrl : POST /ai/message\n{session_id, user_message}
+activate ctrl
+
+ctrl -> model : processMessage(session_id, user_message)
+activate model
+
+model -> db : SELECT * FROM chat_sessions WHERE id = ?
+activate db
+db --> model : session + alert_context
+deactivate db
+
+model -> db : SELECT * FROM alerts WHERE id = alert_id
+activate db
+db --> model : alert details\n(severity, source_ip, description, log_entry)
+deactivate db
+
+model -> db : SELECT * FROM log_entries WHERE id = alert.log_id
+activate db
+db --> model : raw log data for context
+deactivate db
+
+model -> model : Construct system prompt:\n"You are a cybersecurity analyst assistant.\nAlert context: {alert_details}\nLog data: {log_entry}\nProvide actionable analysis."
+
+model -> db : INSERT INTO chat_messages\n(session_id, role='user', content=user_message)
+activate db
+db --> model : OK
+deactivate db
+
+' ── UC-32: Provide Reliable Fixes ──
+group UC-32: Provide Reliable Fixes
+    model -> model : Append to prompt:\n"Include prioritised remediation steps:\n1. Patch recommendations\n2. IP blocking rules\n3. Credential rotation guidance"
+end
+
+' ── UC-33: Suggest Attack Methods ──
+alt User role is Red Team or Purple Team
+    group UC-33: Suggest Attack Methods
+        model -> model : Check legal consent status
+
+        alt Consent accepted
+            model -> model : Append to prompt:\n"Suggest relevant attack techniques,\ntools, and exploitation paths for\neducational purposes (MITRE ATT&CK aligned)"
+        else Consent NOT accepted
+            model -> model : Append to prompt:\n"Output blocked: legal consent required\nfor attack method suggestions"
+        end
+    end
+end
+
+model -> openai : POST /v1/chat/completions\n{model: "gpt-4o-mini",\nmessages: [system, user, ...history],\nmax_tokens: 1024, temperature: 0.3}
+activate openai
+
+alt OpenAI API available
+    openai --> model : 200 OK\n{choices: [{message: {content: ai_response}}]}
+    deactivate openai
+
+    model -> db : INSERT INTO chat_messages\n(session_id, role='assistant', content=ai_response)
+    activate db
+    db --> model : OK
+    deactivate db
+
+    model --> ctrl : Assistant message entity
+    deactivate model
+
+    ctrl --> view : 200 OK\n{assistant_message, session_id}
+    view --> user : Display AI response in chat panel
+else OpenAI API unavailable
+    openai --> model : 503 / timeout
+    deactivate openai
+
+    model --> ctrl : ServiceUnavailableException
+    deactivate model
+
+    ctrl --> view : 503 Service Degraded\n{error: "AI service temporarily unavailable"}
+    view --> user : Display degraded mode message
+end
+
+deactivate ctrl
+deactivate view
+
+== Alternative: Freeform Chat (No Alert Context) ==
+
+user -> view : Open AI Assistant from\nmain navigation (no alert context)
+activate view
+
+view -> ctrl : POST /ai/session\n{mode: "freeform"}
+activate ctrl
+
+ctrl -> model : createSession(user_id, context='freeform')
+activate model
+
+model -> db : INSERT INTO chat_sessions\n(user_id, alert_id=NULL, context='freeform')
+activate db
+db --> model : new session_id
+deactivate db
+
+model --> ctrl : Session entity
+deactivate model
+
+ctrl --> view : 200 OK\n{session_id}
+deactivate ctrl
+
+view --> user : Render blank AI chat panel
+deactivate view
+
+user -> view : Submit freeform query\n(e.g., "Explain CVE-2024-1234")
+activate view
+
+view -> ctrl : POST /ai/message\n{session_id, user_message}
+activate ctrl
+
+ctrl -> model : processMessage(session_id, user_message)
+activate model
+
+model -> model : Construct prompt without\nalert-specific context
+
+alt Query contains CVE identifier
+    model -> model : Append CVE lookup context\nto prompt
+end
+
+model -> openai : POST /v1/chat/completions\n{model: "gpt-4o-mini", messages: [...]}
+activate openai
+
+openai --> model : AI response
+deactivate openai
+
+model -> db : INSERT assistant message
+activate db
+db --> model : OK
+deactivate db
+
+model --> ctrl : Assistant message entity
+deactivate model
+
+ctrl --> view : 200 OK\n{assistant_message}
+view --> user : Display response
+deactivate view
+deactivate ctrl
+
+@enduml

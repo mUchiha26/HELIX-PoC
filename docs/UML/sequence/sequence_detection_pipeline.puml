@@ -1,0 +1,142 @@
+@startuml sequence_detection_pipeline
+title HELIX Platform – Detection Pipeline (UC-11 → UC-12 → UC-13 → UC-14 → UC-15 → UC-16)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 140
+skinparam shadowing false
+skinparam linetype ortho
+skinparam ArrowColor #3C3489
+skinparam ParticipantBorderColor #3C3489
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantFontColor #3C3489
+skinparam ParticipantFontSize 11
+skinparam LifeLineBorderColor #5A50B0
+skinparam LifeLineBackgroundColor #EEEDFE
+skinparam BoxPadding 10
+skinparam BoxBorderColor #CCCAC0
+skinparam BoxBackgroundColor #F8F7F4
+
+actor "Cron / Event\nTrigger" as trigger
+participant "Controller\n(DetectionController)" as ctrl
+participant "Model\n(LogModel, AlertModel,\nMLModel)" as model
+database "Log Sources\n(Syslog, Apache,\nWin Event Log)" as logs
+database "Staging Store\n(normalised entries)" as staging
+participant "Python ML Service\n(scikit-learn)" as ml
+database "MySQL\n(alerts, log_entries)" as db
+participant "Notification\nService" as notify
+participant "Blue Team\nOperator" as analyst
+
+== UC-11: Automated Detection Pipeline ==
+
+trigger -> ctrl : Scheduled trigger\n(every 5 minutes)
+activate ctrl
+
+ctrl -> model : runDetectionCycle()
+activate model
+
+' ── UC-12: Ingest Logs ──
+group UC-12: Ingest Logs
+    model -> logs : Fetch raw logs\n(Syslog, JSON, Apache, Windows Event Log)
+    activate logs
+    logs --> model : Raw log entries
+    deactivate logs
+
+    model -> model : Select format parser\n(SyslogParser, JSONParser, ApacheParser, WinEventParser)
+
+    loop For each raw log entry
+        model -> model : parse(raw_entry)
+        model -> model : normalize() → structured fields\n{timestamp, source_ip, event_type, message, severity_hint}
+
+        alt Unknown format
+            model -> staging : INSERT with tag='unparseable'\n+ flag for manual review
+        else Format recognised
+            model -> staging : INSERT normalised entry\n(source, timestamp, severity, message)
+        end
+    end
+end
+
+' ── UC-13: Pre-filter Noise ──
+group UC-13: Pre-filter Noise
+    model -> staging : SELECT * FROM staging\nWHERE processed = false
+    activate staging
+    staging --> model : Normalised log entries
+    deactivate staging
+
+    loop For each entry
+        model -> model : evaluateNoiseRules(entry)\n(duplicate suppression, benign pattern matching)
+
+        alt Duplicate or benign pattern
+            model -> model : Discard entry\nLog suppression reason
+        else High-signal event
+            model -> model : Forward to scoring stage
+        end
+    end
+end
+
+' ── UC-14: Score Anomalies (includes UC-16) ──
+group UC-14: Score Anomalies
+    model -> ml : POST /api/ml/score\n{feature_vectors: [event_frequency,\nerror_rate, time_of_day, ip_diversity]}
+    activate ml
+
+    group UC-16: Use ML Scoring
+        ml -> ml : Load Isolation Forest model\n(model_path, version)
+
+        alt Model loaded successfully
+            ml -> ml : model.predict(feature_vectors)\n→ anomaly scores [-1.0 to 1.0]
+            ml --> model : Anomaly scores per event
+        else Model unavailable
+            ml --> model : 503 Service Unavailable
+        end
+    end
+    deactivate ml
+
+    alt ML scoring succeeded
+        model -> model : Map anomaly scores to severity\nLOW (<0.3), MEDIUM (0.3-0.6),\nHIGH (0.6-0.85), CRITICAL (>0.85)
+    else ML failed → fallback
+        model -> model : Rule-based severity assignment\n(keyword matching, threshold rules)
+    end
+
+    model -> staging : UPDATE entries SET severity = ?,\nanomaly_score = ?, processed = true
+    activate staging
+    staging --> model : OK
+    deactivate staging
+end
+
+' ── UC-15: Generate Alerts ──
+group UC-15: Generate Alerts
+    model -> staging : SELECT * FROM staging\nWHERE severity IN ('HIGH', 'CRITICAL')
+    activate staging
+    staging --> model : HIGH/CRITICAL events
+    deactivate staging
+
+    loop For each HIGH/CRITICAL event
+        model -> db : INSERT INTO alerts\n(log_id, severity, description, status='open',\nsource_ip, created_at)
+        activate db
+        db --> model : alert_id
+        deactivate db
+
+        model -> model : Enrich alert with GeoIP\n+ reputation data
+
+        alt Enrichment APIs reachable
+            model -> model : Attach GeoIP location,\nthreat intel score
+        else Enrichment APIs unreachable
+            model -> model : Alert created without enrichment\n(log warning)
+        end
+
+        model -> notify : Dispatch notification\n{alert_id, severity, source_ip, description}
+        activate notify
+        notify -> analyst : In-app notification\n+ email (if configured)
+        deactivate notify
+    end
+end
+
+model -> model : Log detection cycle completion\n(events processed, alerts generated, errors)
+
+model --> ctrl : Detection cycle result
+deactivate model
+
+ctrl --> trigger : Cycle complete
+deactivate ctrl
+
+@enduml

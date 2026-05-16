@@ -1,0 +1,155 @@
+@startuml sequence_red_team_recon
+title HELIX Platform – Red Team Reconnaissance Execution (UC-17)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 140
+skinparam shadowing false
+skinparam linetype ortho
+skinparam ArrowColor #3C3489
+skinparam ParticipantBorderColor #3C3489
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantFontColor #3C3489
+skinparam ParticipantFontSize 11
+skinparam LifeLineBorderColor #5A50B0
+skinparam LifeLineBackgroundColor #EEEDFE
+skinparam BoxPadding 10
+skinparam BoxBorderColor #CCCAC0
+skinparam BoxBackgroundColor #F8F7F4
+
+actor "Red Team\nOperator" as operator
+participant "View\n(HTML/CSS/JS)" as view
+participant "Controller\n(RedTeamController)" as ctrl
+participant "Model\n(ScanModel, ToolExecutor)" as model
+database "MySQL\n(scan_tasks, scan_results)" as db
+participant "Security Tool\n(nmap / whois / osint)" as tool
+
+== UC-17: Run Reconnaissance ==
+
+operator -> view : Navigate to Red Team workspace
+activate view
+
+view -> ctrl : GET /redteam/tools
+activate ctrl
+
+ctrl -> model : getAvailableTools()
+activate model
+model --> ctrl : List<ToolDTO>\n[{id: "nmap", name: "Nmap",\ndescription: "Network scanner",\nparameters: [...]}]
+deactivate model
+
+ctrl --> view : 200 OK\n{tools: [...]}
+deactivate ctrl
+
+view --> operator : Display tool selection panel\nwith available reconnaissance tools
+deactivate view
+
+operator -> view : Select tool: "nmap"\nSpecify target: "192.168.1.0/24"\nParameters: -sV -O -p 1-1000\nAccept legal consent checkbox
+activate view
+
+view -> ctrl : POST /redteam/scan\n{tool_type: "nmap",\ntarget: "192.168.1.0/24",\nparameters: "-sV -O -p 1-1000",\nconsent_accepted: true}
+activate ctrl
+
+ctrl -> model : validateScanRequest(user, target, consent)
+activate model
+
+model -> model : Check:\n- User has Red Team or Purple Team role\n- Target is within authorised scope\n- Legal consent is accepted\n- Input sanitisation (prevent command injection)
+
+alt User lacks required role
+    model --> ctrl : AuthorizationException("Insufficient permissions")
+    ctrl --> view : 403 Forbidden\n{error: "Insufficient permissions"}
+    view --> operator : Display access denied
+else Target out of scope
+    model --> ctrl : ValidationException("Target out of scope")
+    ctrl --> view : 400 Bad Request\n{error: "Target not in authorised scope"}
+    view --> operator : Display scope violation warning\nAttempt logged to audit trail
+else Consent NOT accepted
+    model --> ctrl : ValidationException("Consent required")
+    ctrl --> view : 400 Bad Request\n{error: "Legal consent required"}
+    view --> operator : Display consent requirement
+else All validations pass
+    model -> db : INSERT INTO scan_tasks\n(operator_id, target, tool_type, parameters,\nstatus='pending', started_at=NULL)
+    activate db
+    db --> model : scan_task_id
+    deactivate db
+
+    model --> ctrl : ScanTask entity
+    deactivate model
+
+    ctrl --> view : 202 Accepted\n{scan_task_id, status: "pending"}
+    view --> operator : Display "Scan queued" status\nEnable real-time status polling
+end
+
+deactivate ctrl
+deactivate view
+
+== Scan Execution (Async) ==
+
+ctrl -> model : executeScan(scan_task_id)
+activate model
+
+model -> db : UPDATE scan_tasks\nSET status='running', started_at = NOW()
+activate db
+db --> model : OK
+deactivate db
+
+model -> model : Build command:\n"nmap -sV -O -p 1-1000 192.168.1.0/24\n-oX /tmp/scan_{task_id}.xml"
+
+model -> tool : exec(command)
+activate tool
+
+loop Scan running (streaming output)
+    tool --> model : Partial XML output\n(host discovery, port scan results)
+    model -> db : UPDATE scan_tasks\nSET status='running',\nprogress = current_progress
+    activate db
+    db --> model : OK
+    deactivate db
+    model -> view : WebSocket push:\n{task_id, status: "running", progress: N%}
+    activate view
+    view --> operator : Update progress bar\nShow live host discovery
+    deactivate view
+end
+
+alt Tool completes successfully
+    tool --> model : Full XML output\n(all hosts, ports, services, OS detection)
+    deactivate tool
+
+    model -> model : parseXmlOutput(xml)\nExtract structured results
+
+    model -> db : UPDATE scan_tasks\nSET status='completed',\ncompleted_at = NOW()
+    activate db
+    db --> model : OK
+    deactivate db
+else Tool timeout (e.g., 5 minutes exceeded)
+    tool --> model : Process killed (timeout)
+    deactivate tool
+
+    model -> db : UPDATE scan_tasks\nSET status='failed',\nerror='Tool execution timeout',\ncompleted_at = NOW()
+    activate db
+    db --> model : OK
+    deactivate db
+end
+
+' ── Results Processing ──
+alt Scan completed
+    loop For each discovered host/port
+        model -> db : INSERT INTO scan_results\n(scan_task_id, host, port, protocol,\nstate, service, version, os_hint)
+        activate db
+        db --> model : result_id
+        deactivate db
+    end
+else Scan failed / timeout
+    model -> db : INSERT partial results with\nerror flag for operator review
+    activate db
+    db --> model : OK
+    deactivate db
+end
+
+deactivate model
+
+model -> view : WebSocket push:\n{task_id, status: "completed",\nresults_count: N, summary: {...}}
+activate view
+
+view --> operator : Display scan results:\n- Discovered hosts table\n- Open ports with service/version info\n- OS detection results\n- Export options (JSON, CSV)\n- Link to create writeup (UC-20)
+deactivate view
+
+@enduml

@@ -1,0 +1,162 @@
+@startuml sequence_dashboard
+title HELIX Platform – Security Dashboard & Event Monitoring (UC-07 / UC-08)
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam maxMessageSize 140
+skinparam shadowing false
+skinparam linetype ortho
+skinparam ArrowColor #3C3489
+skinparam ParticipantBorderColor #3C3489
+skinparam ParticipantBackgroundColor #FFFFFF
+skinparam ParticipantFontColor #3C3489
+skinparam ParticipantFontSize 11
+skinparam LifeLineBorderColor #5A50B0
+skinparam LifeLineBackgroundColor #EEEDFE
+skinparam BoxPadding 10
+skinparam BoxBorderColor #CCCAC0
+skinparam BoxBackgroundColor #F8F7F4
+
+actor "Blue Team\nOperator" as user
+participant "View\n(HTML/CSS/JS)" as view
+participant "Controller\n(DashboardController)" as ctrl
+participant "Model\n(DashboardModel,\nEventModel, AlertModel)" as model
+database "MySQL\n(alerts, log_entries, ml_scores)" as db
+
+== UC-07: View Security Dashboard ==
+
+user -> view : Navigate to /dashboard
+activate view
+
+view -> ctrl : GET /dashboard\nCookie: PHPSESSID=xxx
+activate ctrl
+
+ctrl -> ctrl : Validate session\nExtract user role from session
+
+ctrl -> model : getDashboardMetrics(role)
+activate model
+
+model -> db : SELECT COUNT(*) as critical\nFROM alerts WHERE severity='critical'\nAND status IN ('open', 'investigating')
+activate db
+db --> model : critical_count
+deactivate db
+
+model -> db : SELECT COUNT(*) as high\nFROM alerts WHERE severity='high'\nAND status IN ('open', 'investigating')
+activate db
+db --> model : high_count
+deactivate db
+
+model -> db : SELECT COUNT(*) as medium\nFROM alerts WHERE severity='medium'\nAND status IN ('open', 'investigating')
+activate db
+db --> model : medium_count
+deactivate db
+
+model -> db : SELECT COUNT(*) as low\nFROM alerts WHERE severity='low'\nAND status IN ('open', 'investigating')
+activate db
+db --> model : low_count
+deactivate db
+
+model -> db : SELECT DATE(created_at) as date,\nCOUNT(*) as count\nFROM alerts\nWHERE created_at >= NOW() - INTERVAL 24 HOUR\nGROUP BY DATE(created_at)\nORDER BY date
+activate db
+db --> model : 24-hour timeline data
+deactivate db
+
+model -> db : SELECT COUNT(*) FROM incidents\nWHERE status != 'resolved'\nAND status != 'closed'
+activate db
+db --> model : open_incidents_count
+deactivate db
+
+model -> db : SELECT AVG(anomaly_score) as avg_score,\nMAX(anomaly_score) as max_score\nFROM log_entries\nWHERE created_at >= NOW() - INTERVAL 1 HOUR
+activate db
+db --> model : ML score summary
+deactivate db
+
+model -> model : Aggregate metrics:\n{alerts_by_severity, timeline, open_incidents, ml_summary}
+
+alt Role = Blue Team / Purple Team / Admin
+    model -> model : Include operational metrics:\nalert response times, escalation rates
+else Role = Red Team
+    model -> model : Include red team metrics:\nrecent scans, tool usage stats
+else Role = Learner
+    model -> model : Include learning-oriented metrics:\nstudy progress, module completion
+end
+
+model --> ctrl : DashboardMetrics DTO
+deactivate model
+
+ctrl --> view : 200 OK\n{alerts_by_severity: {critical, high, medium, low},\ntimeline: [{date, count}],\nopen_incidents: N,\nml_summary: {avg_score, max_score},\nrole_specific_data: {...}}
+deactivate ctrl
+
+alt Data exists
+    view --> user : Render dashboard with:\n- Severity donut chart\n- 24-hour event timeline\n- Open incident counter\n- ML anomaly score gauge\n- Role-specific widgets
+else No events exist
+    view --> user : Render empty state with guidance:\n"No security events detected.\nConfigure log sources to begin monitoring."
+end
+
+deactivate view
+
+== UC-08: Monitor Security Events ==
+
+user -> view : Navigate to /events\nApply filters: severity=high,\ndate_range=last_7_days, source_ip=10.0.0.5
+activate view
+
+view -> ctrl : GET /events?\nseverity=high&start_date=2026-05-09\n&end_date=2026-05-16&source_ip=10.0.0.5
+activate ctrl
+
+ctrl -> model : getFilteredEvents(filters)
+activate model
+
+model -> model : Validate filter parameters
+
+model -> db : SELECT le.*, a.id as alert_id,\na.severity, a.status, a.description\nFROM log_entries le\nLEFT JOIN alerts a ON le.id = a.log_id\nWHERE 1=1\nAND a.severity = 'high'\nAND le.created_at BETWEEN ? AND ?\nAND le.source_ip = ?\nORDER BY le.created_at DESC\nLIMIT 50 OFFSET 0
+activate db
+db --> model : Matching events with\nenrichment data (alert info, GeoIP)
+deactivate db
+
+alt Events found
+    model --> ctrl : List<EventDTO> + pagination metadata
+    deactivate model
+
+    ctrl --> view : 200 OK\n{events: [{id, timestamp, source_ip,\nevent_type, severity, description,\nalert_status, geoip_location}],\ntotal: N, page: 1, per_page: 50}
+
+    view --> user : Render filtered event table:\n- Timestamp, source IP, event type\n- Severity badge, alert status\n- Enrichment data (GeoIP, reputation)\n- Pagination controls
+else No events match
+    model --> ctrl : Empty list
+    deactivate model
+
+    ctrl --> view : 200 OK\n{events: [], total: 0}
+    view --> user : Display empty result:\n"No events match your filters.\nTry adjusting your criteria."
+end
+
+deactivate ctrl
+deactivate view
+
+user -> view : Click on specific event\nto view full details
+activate view
+
+view -> ctrl : GET /events/{event_id}
+activate ctrl
+
+ctrl -> model : getEventDetails(event_id)
+activate model
+
+model -> db : SELECT * FROM log_entries WHERE id = ?
+activate db
+db --> model : Full log entry details
+deactivate db
+
+model -> db : SELECT * FROM alerts WHERE log_id = ?
+activate db
+db --> model : Associated alert (if any)
+deactivate db
+
+model --> ctrl : EventDetail DTO
+deactivate model
+
+ctrl --> view : 200 OK\n{event: {...}, alert: {...}, raw_log: "..."}
+deactivate ctrl
+
+view --> user : Render event detail view:\n- Full log entry\n- Associated alert info\n- Raw log data\n- AI analysis link (UC-31)
+deactivate view
+
+@enduml
