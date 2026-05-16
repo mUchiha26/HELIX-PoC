@@ -22,6 +22,7 @@
 \usepackage{hyperref}
 \usepackage{longtable}
 \usepackage{graphicx}
+\usepackage{etoolbox}
 
 \geometry{a4paper, top=2cm, bottom=2cm, left=2cm, right=2cm, headheight=15pt}
 
@@ -63,6 +64,12 @@
 
 \newcommand{\ucfield}[2]{%
     \noindent\textbf{\color{helixpurplemid}#1:}\quad #2\par\medskip
+}
+
+\newcommand{\ucphase}[1]{%
+    \noindent\textbf{\color{helixpurplemid}Phase:}\quad%
+    \ifstrequal{#1}{PoC}{\textcolor{helixteal}{\textbf{PoC}}}{\textcolor{helixamber}{\textbf{Future MVP}}}%
+    \par\medskip
 }
 
 % ── Section styling ──────────────────────────────────────────────────────
@@ -219,6 +226,7 @@ are grouped with their parent for conciseness.
 \section{UC-01 -- Register Account}
 \begin{ucbox}{UC-01 \quad Register Account}
     \ucfield{Actors}{Visitor (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User has no existing HELIX account.}
     \ucfield{Postconditions}{A new Learner account is created; user can log in.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -239,6 +247,7 @@ are grouped with their parent for conciseness.
 \section{UC-02 -- Log In}
 \begin{ucbox}{UC-02 \quad Log In}
     \ucfield{Actors}{Visitor (initiates); Authenticated User (inherits)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User has a registered, active account.}
     \ucfield{Postconditions}{A valid session is created; user redirected to role dashboard.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -258,6 +267,7 @@ are grouped with their parent for conciseness.
 \section{UC-03 -- Manage Profile}
 \begin{ucbox}{UC-03 \quad Manage Profile}
     \ucfield{Actors}{Authenticated User (all concrete roles inherit)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is logged in with a valid session.}
     \ucfield{Postconditions}{Profile information updated and persisted.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -276,6 +286,7 @@ are grouped with their parent for conciseness.
 \section{UC-04 -- Manage Users}
 \begin{ucbox}{UC-04 \quad Manage Users}
     \ucfield{Actors}{Administrator (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Admin is authenticated.}
     \ucfield{Postconditions}{User account created, deactivated, or role-reassigned.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -294,6 +305,7 @@ are grouped with their parent for conciseness.
 \section{UC-05 -- Configure System}
 \begin{ucbox}{UC-05 \quad Configure System}
     \ucfield{Actors}{Administrator (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Admin is authenticated.}
     \ucfield{Postconditions}{System parameters (detection thresholds, API keys, retention) updated.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -312,6 +324,7 @@ are grouped with their parent for conciseness.
 \section{UC-06 -- Subscribe}
 \begin{ucbox}{UC-06 \quad Subscribe}
     \ucfield{Actors}{Authenticated User (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is logged in. A subscription plan is available.}
     \ucfield{Postconditions}{User subscription tier upgraded; premium features unlocked.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -334,6 +347,7 @@ are grouped with their parent for conciseness.
 \section{UC-07 -- View Security Dashboard}
 \begin{ucbox}{UC-07 \quad View Security Dashboard}
     \ucfield{Actors}{Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is authenticated. At least one security event exists.}
     \ucfield{Postconditions}{Dashboard displayed with live metrics; no state modified.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -352,6 +366,7 @@ are grouped with their parent for conciseness.
 \section{UC-08 -- Monitor Security Events}
 \begin{ucbox}{UC-08 \quad Monitor Security Events}
     \ucfield{Actors}{Blue Team Operator (primary), Purple Team Operator}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is authenticated. Log events are available.}
     \ucfield{Postconditions}{Filtered list of security events displayed.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -370,6 +385,7 @@ are grouped with their parent for conciseness.
 \section{UC-09 -- Manage Incidents}
 \begin{ucbox}{UC-09 \quad Manage Incidents}
     \ucfield{Actors}{Blue Team Operator (primary), Purple Team Operator, Administrator}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is authenticated. At least one alert exists.}
     \ucfield{Postconditions}{Incident created or updated; status transition logged.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -388,6 +404,7 @@ are grouped with their parent for conciseness.
 \section{UC-10 -- Generate Report}
 \begin{ucbox}{UC-10 \quad Generate Report}
     \ucfield{Actors}{Blue Team Operator (primary), Administrator}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is authenticated. At least one incident or alert exists.}
     \ucfield{Postconditions}{Structured PDF report generated and available for download.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -414,6 +431,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-11 -- Automated Detection}
 \begin{ucbox}{UC-11 \quad Automated Detection}
     \ucfield{Actors}{Detection Engine (primary system actor)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Detection Engine is running. Log sources are reachable.}
     \ucfield{Postconditions}{Alerts generated for anomalous events; pipeline completed.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -437,6 +455,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-12 -- Ingest Logs}
 \begin{ucbox}{UC-12 \quad Ingest Logs \textnormal{(included by UC-13)}}
     \ucfield{Actors}{Detection Engine}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Log source accessible; parser registered.}
     \ucfield{Postconditions}{Raw logs parsed and normalised as structured entries.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -454,6 +473,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-13 -- Pre-filter Noise}
 \begin{ucbox}{UC-13 \quad Pre-filter Noise \textnormal{(included by UC-14)}}
     \ucfield{Actors}{Detection Engine}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Normalised log entries in staging store.}
     \ucfield{Postconditions}{Low-signal events suppressed; high-signal events forwarded.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -471,6 +491,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-14 -- Score Anomalies}
 \begin{ucbox}{UC-14 \quad Score Anomalies \textnormal{(included by UC-15)}}
     \ucfield{Actors}{Detection Engine}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Filtered events available. ML model loaded.}
     \ucfield{Postconditions}{Each event receives severity: LOW, MEDIUM, HIGH, or CRITICAL.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -488,6 +509,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-15 -- Generate Alerts}
 \begin{ucbox}{UC-15 \quad Generate Alerts \textnormal{(included by UC-11)}}
     \ucfield{Actors}{Detection Engine}
+    \ucphase{PoC}
     \ucfield{Preconditions}{UC-14 completed; HIGH or CRITICAL events exist.}
     \ucfield{Postconditions}{Alert records created; analysts notified; audit log written.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -506,6 +528,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-16 -- Use ML Scoring}
 \begin{ucbox}{UC-16 \quad Use ML Scoring \textnormal{(included by UC-14)}}
     \ucfield{Actors}{Detection Engine}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Isolation Forest model loaded and up to date.}
     \ucfield{Postconditions}{Each event receives a continuous anomaly score.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -528,6 +551,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-17 -- Run Reconnaissance}
 \begin{ucbox}{UC-17 \quad Run Reconnaissance}
     \ucfield{Actors}{Red Team Operator (primary), Purple Team Operator}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User authenticated with Red Team role. Legal consent accepted. Target in scope.}
     \ucfield{Postconditions}{Reconnaissance results persisted and viewable.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -547,6 +571,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-18 -- Launch Exploitation}
 \begin{ucbox}{UC-18 \quad Launch Exploitation}
     \ucfield{Actors}{Red Team Operator (primary), Purple Team Operator}
+    \ucphase{Future MVP}
     \ucfield{Preconditions}{Reconnaissance complete. Legal consent accepted.}
     \ucfield{Postconditions}{Exploitation result logged (success or failure).}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -566,6 +591,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-19 -- Post-Exploitation Lab}
 \begin{ucbox}{UC-19 \quad Post-Exploitation Lab}
     \ucfield{Actors}{Red Team Operator (primary), Purple Team Operator}
+    \ucphase{Future MVP}
     \ucfield{Preconditions}{Successful exploitation or lab environment available.}
     \ucfield{Postconditions}{Post-exploitation actions logged for analysis.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -583,6 +609,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-20 -- Create a Writeup}
 \begin{ucbox}{UC-20 \quad Create a Writeup}
     \ucfield{Actors}{Red Team Operator (primary), Purple Team Operator}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User authenticated. An operation or CTF result exists.}
     \ucfield{Postconditions}{Writeup submitted for moderation; visible upon approval.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -605,6 +632,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-21 -- Browse Public Content}
 \begin{ucbox}{UC-21 \quad Browse Public Content}
     \ucfield{Actors}{Visitor (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{None. User is unauthenticated.}
     \ucfield{Postconditions}{Public content displayed; no session created.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -622,6 +650,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-22 -- Search Knowledge Base}
 \begin{ucbox}{UC-22 \quad Search Knowledge Base}
     \ucfield{Actors}{Authenticated User (all concrete roles inherit)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is logged in. Published articles exist.}
     \ucfield{Postconditions}{Matching articles displayed; no state changed.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -639,6 +668,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-23 -- Publish Article}
 \begin{ucbox}{UC-23 \quad Publish Article}
     \ucfield{Actors}{Authenticated User (all concrete roles inherit)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is logged in.}
     \ucfield{Postconditions}{Article submitted; visible after Admin moderation.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -657,6 +687,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-24 -- Collaborate on Incidents}
 \begin{ucbox}{UC-24 \quad Collaborate on Incidents}
     \ucfield{Actors}{Purple Team Operator (primary)}
+    \ucphase{Future MVP}
     \ucfield{Preconditions}{User authenticated as Purple Team. Active incident exists.}
     \ucfield{Postconditions}{Incident updated with cross-team annotations; timeline entry created.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -674,6 +705,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-25 -- Share Findings}
 \begin{ucbox}{UC-25 \quad Share Findings}
     \ucfield{Actors}{Purple Team Operator (primary)}
+    \ucphase{Future MVP}
     \ucfield{Preconditions}{User authenticated as Purple Team. Completed operation or incident exists.}
     \ucfield{Postconditions}{Findings shared; notification sent.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -691,6 +723,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-26 -- Moderate Knowledge Base}
 \begin{ucbox}{UC-26 \quad Moderate Knowledge Base}
     \ucfield{Actors}{Administrator (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Admin authenticated. Articles pending review exist.}
     \ucfield{Postconditions}{Article approved (published), rejected, or archived.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -714,6 +747,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-27 -- Study with Premium Materials}
 \begin{ucbox}{UC-27 \quad Study with Premium Materials}
     \ucfield{Actors}{Learner (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Learner authenticated with active subscription. Premium content exists.}
     \ucfield{Postconditions}{Premium module accessed; progress updated (UC-29 included).}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -733,6 +767,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-28 -- Manage Personal Notes}
 \begin{ucbox}{UC-28 \quad Manage Personal Notes \textnormal{(\texttt{<<extend>>} UC-27)}}
     \ucfield{Actors}{Learner (primary)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Learner authenticated. A module or article is open.}
     \ucfield{Postconditions}{Note created, updated, or deleted; data strictly private.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -750,6 +785,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-29 -- Track Progress}
 \begin{ucbox}{UC-29 \quad Track Progress \textnormal{(included by UC-27)}}
     \ucfield{Actors}{Learner (indirect, via UC-27)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{Learner completes or accesses a module/exercise.}
     \ucfield{Postconditions}{Progress log updated; dashboard refreshed.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -766,6 +802,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-30 -- Participate in Events}
 \begin{ucbox}{UC-30 \quad Participate in Events}
     \ucfield{Actors}{Learner (primary)}
+    \ucphase{Future MVP}
     \ucfield{Preconditions}{Learner authenticated. An active event (CTF, webinar, challenge) is live.}
     \ucfield{Postconditions}{Learner registered for or completed the event; results logged.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -790,6 +827,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-31 -- Use AI Assistant}
 \begin{ucbox}{UC-31 \quad Use AI Assistant}
     \ucfield{Actors}{Authenticated User (all concrete roles inherit)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{User is logged in. OpenAI API available. Alert or query context exists.}
     \ucfield{Postconditions}{AI-generated explanation, remediation, or attack suggestion returned.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -810,6 +848,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-32 -- Provide Reliable Fixes}
 \begin{ucbox}{UC-32 \quad Provide Reliable Fixes \textnormal{(included by UC-31)}}
     \ucfield{Actors}{AI Service (internal)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{UC-31 initiated; alert context available.}
     \ucfield{Postconditions}{Context-specific remediation steps returned.}
     \textbf{\color{helixpurplemid}Main Scenario:}
@@ -826,6 +865,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \section{UC-33 -- Suggest Attack Methods}
 \begin{ucbox}{UC-33 \quad Suggest Attack Methods \textnormal{(included by UC-31)}}
     \ucfield{Actors}{AI Service (internal)}
+    \ucphase{PoC}
     \ucfield{Preconditions}{UC-31 initiated; Red Team or Purple Team context detected.}
     \ucfield{Postconditions}{Relevant attack techniques returned.}
     \textbf{\color{helixpurplemid}Main Scenario:}
