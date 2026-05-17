@@ -1,5 +1,8 @@
 # Ignore the sessions summary file
 SESSIONS_SUMMARY.md
+# PHP
+vendor/
+
 # Python
 .venv/
 __pycache__/

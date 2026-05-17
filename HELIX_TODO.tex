@@ -204,30 +204,30 @@
 \subsection{0.4 -- PHP Composer Setup}
 
 \begin{itemize}
-    \task{\undone}{Run \texttt{composer install}}
-    \task{\undone}{Verify \filepath{vendor/autoload.php} was created}
+    \task{\done}{Run \texttt{composer install}}
+    \task{\done}{Verify \filepath{vendor/autoload.php} was created}
     \task{\undone}{Add \texttt{require\_once} for autoloader in \filepath{api/index.php}}
 \end{itemize}
 
 \subsection{0.5 -- Environment Configuration}
 
 \begin{itemize}
-    \task{\undone}{Create \filepath{api/config/Environment.php}}
-    \task{\undone}{Create \filepath{api/config/.env} (gitignored, with real values)}
-    \task{\undone}{Create \filepath{api/config/.env.example} (committed, no secrets)}
+    \task{\done}{Create \filepath{api/config/Environment.php}}
+    \task{\done}{Create \filepath{api/config/.env} (gitignored, with real values)}
+    \task{\done}{Create \filepath{api/config/.env.example} (committed, no secrets)}
 \end{itemize}
 
 \subsection{0.6 -- Database Config}
 
 \begin{itemize}
-    \task{\undone}{Create \filepath{api/config/Database.php}}
+    \task{\done}{Create \filepath{api/config/Database.php}}
     \task{\undone}{Test \texttt{Database::getInstance()} in \filepath{api/index.php}}
 \end{itemize}
 
 \subsection{0.7 -- CORS Configuration}
 
 \begin{itemize}
-    \task{\undone}{Create \filepath{api/config/Cors.php}}
+    \task{\done}{Create \filepath{api/config/Cors.php}}
 \end{itemize}
 
 \subsection{0.8 -- Helper Classes}
@@ -247,8 +247,8 @@
 \subsection{0.10 -- Python Environment}
 
 \begin{itemize}
-    \task{\undone}{Confirm Python $\geq$ 3.10}
-    \task{\undone}{Create \texttt{.venv} inside \filepath{python-module/}}
+    \task{\done}{Confirm Python $\geq$ 3.10}
+    \task{\done}{Create \texttt{.venv} inside \filepath{python-module/}}
     \task{\undone}{Create \filepath{pyproject.toml}}
     \task{\undone}{Install: \texttt{pip install -e ".[dev]"}}
     \task{\undone}{Update \texttt{PYTHON\_PATH} in \filepath{.env}}
@@ -283,8 +283,8 @@
 \subsection{1.1 -- Database Schema}
 
 \begin{itemize}
-    \task{\undone}{Verify schema matches UML diagrams}
-    \task{\undone}{Import: \texttt{mysql -u helix\_user -p helix\_db < db/schema.sql}}
+    \task{\done}{Verify schema matches UML diagrams}
+    \task{\undone}{Import: \texttt{mysql -u helixdb\_admin -p helixdb < db/schema.sql}}
     \task{\undone}{Confirm all 6 tables in phpMyAdmin}
 \end{itemize}
 

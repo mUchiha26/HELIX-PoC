@@ -333,8 +333,8 @@ FLUSH PRIVILEGES;
 }
 ```
 
-- [ ] Run: `composer install`
-- [ ] Verify `vendor/autoload.php` was created
+- [x] Run: `composer install`
+- [x] Verify `vendor/autoload.php` was created
 - [ ] Add `require_once __DIR__ . '/../../vendor/autoload.php';` to `api/index.php`
 
 **Why PSR-4 matters:** With this config, `use App\Controllers\AuthController` automatically maps to `api/controllers/AuthController.php`. You never write manual `require` statements for your own classes.
@@ -373,9 +373,9 @@ class Environment
 Create `api/config/.env` (gitignored):
 
 ```
-DB_HOST=localhost
-DB_NAME=helix_db
-DB_USER=helix_user
+DB_HOST=helix.local
+DB_NAME=helixdb
+DB_USER=helixdb_admin
 DB_PASS=your_password
 OPENAI_API_KEY=sk-...
 SESSION_LIFETIME=3600
@@ -388,8 +388,8 @@ Create `api/config/.env.example` (committed to git — no real values):
 
 ```
 DB_HOST=localhost
-DB_NAME=helix_db
-DB_USER=helix_user
+DB_NAME=helixdb
+DB_USER=helixdb_admin
 DB_PASS=
 OPENAI_API_KEY=
 SESSION_LIFETIME=3600

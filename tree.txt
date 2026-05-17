@@ -1,107 +1,107 @@
 .
 ├── api
-│   ├── config
-│   │   ├── Cors.php
-│   │   ├── Database.php
-│   │   └── Environment.php
-│   ├── controllers
-│   │   ├── AIController.php
-│   │   ├── AlertController.php
-│   │   ├── AuthController.php
-│   │   ├── DashboardController.php
-│   │   ├── LogController.php
-│   │   ├── MLController.php
-│   │   └── ScannerController.php
-│   ├── helpers
-│   │   ├── Response.php
-│   │   └── Validator.php
-│   ├── index.php
-│   ├── middleware
-│   │   ├── AuthMiddleware.php
-│   │   └── RoleMiddleware.php
-│   ├── models
-│   │   ├── Alert.php
-│   │   ├── ChatSession.php
-│   │   ├── LogEntry.php
-│   │   ├── ScanResult.php
-│   │   └── User.php
-│   └── services
-│       ├── AIService.php
-│       ├── AlertService.php
-│       ├── AuthService.php
-│       ├── JavaBridge.php
-│       ├── LogService.php
-│       ├── MLService.php
-│       └── ScannerService.php
-├── composer.json
+│   ├── config
+│   │   ├── Cors.php — Sets HTTP CORS headers so the decoupled frontend can call the API without browser blocking
+│   │   ├── Database.php — PDO singleton — creates and returns the one shared MySQL connection used everywhere
+│   │   └── Environment.php — Loads .env file into $_ENV; provides a get() helper to read config values safely
+│   ├── controllers
+│   │   ├── AIController.php — Handles /ai/chat and /ai/history — receives the request, calls AIService, returns JSON
+│   │   ├── AlertController.php — Handles /alerts list, detail, and status update — delegates logic to AlertService
+│   │   ├── AuthController.php — Handles /auth/login, /auth/logout, /auth/register, /auth/me — entry point for all auth requests
+│   │   ├── DashboardController.php — Handles /dashboard/stats — aggregates metrics from multiple tables and returns them as one JSON object
+│   │   ├── LogController.php — Handles /logs/upload and /logs list — receives uploaded files and delegates to LogService
+│   │   ├── MLController.php — Handles /ml/score — triggers the Python anomaly detection script via MLService
+│   │   └── ScannerController.php — Handles /scanner/scan and /scanner/results — calls ScannerService, enforces red-team role
+│   ├── helpers
+│   │   ├── Response.php — Standardizes all API responses — success(), error(), forbidden(), unauthorized() always produce consistent JSON
+│   │   └── Validator.php — Chainable input validator — checks required fields, email format, minimum length, and collects errors
+│   ├── index.php — Front Controller — single entry point for all API requests; parses the route and dispatches to the correct controller
+│   ├── middleware
+│   │   ├── AuthMiddleware.php — Verifies the user has an active session; returns 401 and stops execution if not
+│   │   └── RoleMiddleware.php — Verifies the authenticated user's role is in the allowed list; returns 403 if not
+│   ├── models
+│   │   ├── Alert.php — All DB queries for the alerts table — filter, find with joined context, update status
+│   │   ├── ChatSession.php — All DB queries for the chat_sessions table — save messages, retrieve conversation history
+│   │   ├── LogEntry.php — All DB queries for the log_entries table — batch insert, paginate, filter by severity
+│   │   ├── ScanResult.php — All DB queries for the scan_results table — batch insert scan output, retrieve scan history
+│   │   └── User.php — All DB queries for the users table — find by username/id, create, update last login
+│   └── services
+│       ├── AIService.php — Business logic for the AI assistant — builds role-based prompts, injects alert context, calls OpenAI API, saves history
+│       ├── AlertService.php — Business logic for alerts — wraps model calls for listing, fetching detail, and status updates
+│       ├── AuthService.php — Business logic for authentication — bcrypt hashing, credential verification, session lifecycle
+│       ├── JavaBridge.php — The only file that calls shell_exec() — safely invokes the Java module with sanitized arguments and returns parsed output
+│       ├── LogService.php — Business logic for log ingestion — validates the upload, delegates parsing to JavaBridge, batch-inserts results
+│       ├── MLService.php — Invokes the Python anomaly detector script via subprocess and interprets its JSON output
+│       └── ScannerService.php — Business logic for scanning — validates target IP/hostname, calls JavaBridge, persists results
+├── composer.json — PHP project manifest — declares PHPUnit as a dev dependency, configures PSR-4 autoloading for App\ and Tests\ namespaces
 ├── database
-│   ├── migrations
-│   │   └── 001_add_anomaly_score.sql
-│   ├── schema.sql
-│   └── seed.sql
+│   ├── migrations
+│   │   └── 001_add_anomaly_score.sql — First schema migration — adds or alters the anomaly_scores table after the initial schema was created
+│   ├── schema.sql — Complete database definition — all 6 tables (users, log_entries, anomaly_scores, alerts, chat_sessions, scan_results) with foreign keys
+│   └── seed.sql — Initial data — test users for each role with bcrypt-hashed passwords for development testing
 ├── docs
-│   ├── ARCHITECTURE.md
-│   ├── ROADMAP.md
-│   ├── SDD
-│   │   ├── API_REFERENCE.md
-│   │   ├── HELIX_SDD.md
-│   │   └── SECURITY_DESIGN.md
-│   └── UML
-│       ├── activity_alert.drawio
-│       ├── class_services.drawio
-│       ├── component.drawio
-│       ├── er_diagram.drawio
-│       ├── png
-│       ├── sequence_ai_chat.drawio
-│       ├── sequence_auth.drawio
-│       ├── sequence_log_ingest.drawio
-│       └── use_case.drawio
+│   ├── ARCHITECTURE.md
+│   ├── ROADMAP.md
+│   ├── SDD
+│   │   ├── API_REFERENCE.md
+│   │   ├── HELIX_SDD.md
+│   │   └── SECURITY_DESIGN.md
+│   └── UML
+│       ├── activity_alert.puml
+│       ├── class_services.puml
+│       ├── component.puml
+│       ├── er_diagram.puml
+│       ├── png
+│       ├── sequence_ai_chat.puml
+│       ├── sequence_auth.puml
+│       ├── sequence_log_ingest.puml
+│       └── use_case.puml
 ├── frontend
-│   ├── assets
-│   │   ├── favicon.ico
-│   │   └── logo.svg
-│   ├── css
-│   │   ├── components.css
-│   │   ├── dashboard.css
-│   │   └── main.css
-│   ├── dashboard.html
-│   ├── index.html
-│   ├── js
-│   │   ├── alerts.js
-│   │   ├── api.js
-│   │   ├── auth.js
-│   │   ├── chat.js
-│   │   ├── dashboard.js
-│   │   ├── logs.js
-│   │   ├── router.js
-│   │   ├── scanner.js
-│   │   └── ui.js
-│   └── login.html
+│   ├── assets
+│   │   ├── favicon.ico — Browser tab icon for HELIX
+│   │   └── logo.svg — HELIX logo used in the sidebar and header
+│   ├── css
+│   │   ├── components.css — Reusable UI component styles — cards, badges, buttons, tables, modals
+│   │   ├── dashboard.css — Dashboard-specific layout styles — grid, metric cards, chart containers
+│   │   └── main.css — Global design system — CSS variables for colors, severity levels, typography, and layout base styles
+│   ├── dashboard.html — Main app shell — the single HTML page that all authenticated views render inside
+│   ├── index.html — Landing page — entry point for unauthenticated visitors; typically redirects to login
+│   ├── js
+│   │   ├── alerts.js — Renders the alert list with filters, severity badges, detail view, and status update controls
+│   │   ├── api.js — Shared API client — wraps fetch() with credentials: include, base URL, and automatic 401 redirect
+│   │   ├── auth.js — Handles login form submission, logout, and session checks on page load
+│   │   ├── chat.js — Renders the AI assistant chat interface — sends messages, displays conversation history, handles the alert selector
+│   │   ├── dashboard.js — Fetches dashboard stats and renders Chart.js charts (severity bar, alert trend line)
+│   │   ├── logs.js — Renders the log upload form, handles FormData file submission, and displays the log entry table
+│   │   ├── router.js — Client-side router — maps URL paths to JS module render() functions, handles browser back/forward
+│   │   ├── scanner.js — Renders the port scanner form, displays scan results with color-coded port states, and shows scan history
+│   │   └── ui.js — Builds the role-aware sidebar navigation and manages the global page layout
+│   └── login.html — Login form page — username and password fields, calls /api/auth/login via auth.js
 ├── java-module
-│   ├── build
-│   ├── compile.sh
-│   ├── README.md
-│   └── src
-│       ├── HashScanner.java
-│       ├── LogFormat.java
-│       ├── LogParser.java
-│       └── ParseResult.java
+│   ├── build — Output directory for compiled .class files — not committed to git, regenerated by compile.sh
+│   ├── compile.sh — Shell script that compiles all .java source files into the build/ directory in one command
+│   ├── README.md — Build and usage instructions for the Java module — compile command, expected input/output format
+│   └── src
+│       ├── HashScanner.java — Computes file hashes and compares them against a known-bad hash list — outputs match results as JSON
+│       ├── LogFormat.java — Defines the structure (schema) of a supported log format — field names, delimiters, expected columns
+│       ├── LogParser.java — Reads a log file, applies the correct LogFormat, produces a list of ParseResult objects, outputs JSON to stdout
+│       └── ParseResult.java — Data Transfer Object (DTO) — holds one parsed log entry (timestamp, IP, severity, message) ready to be serialized
 ├── python-module
-│   ├── anomaly_detector.py
-│   ├── config.py
-│   ├── db_connector.py
-│   ├── feature_engineering.py
-│   ├── README.md
-│   ├── requirements.txt
-│   └── test_detector.py
-├── README.md
+│   ├── README.md — Setup and usage instructions for the Python module — venv creation, dependency install, how to run
+│   ├── anomaly_detector.py — Main script — loads or trains the Isolation Forest model, scores log entries, writes results to DB, prints JSON summary
+│   ├── config.py — Reads DB credentials and model file path from environment variables — single source of truth for Python config
+│   ├── db_connector.py — MySQL connection and queries for the Python side — fetches unscored log entries, saves computed anomaly scores
+│   ├── feature_engineering.py — Transforms raw log records into numerical feature vectors that the Isolation Forest model can consume
+│   ├── requirements.txt — Python project manifest — declares dependencies (scikit-learn, pandas, numpy, joblib, mysql-connector), Python version requirement, and build system
+│   └── test_detector.py — pytest tests for the Python module — tests feature extraction shape, score mapping, and empty dataset handling
+├── README.md — Project overview
 ├── tests
-│   ├── php
-│   │   ├── AuthServiceTest.php
-│   │   ├── LogServiceTest.php
-│   │   └── ValidatorTest.php
-│   └── python
-├── tree.txt
-└── vendor
+│   ├── php
+│   │   ├── AuthServiceTest.php — PHPUnit tests for AuthService — verifies login rejects bad credentials, register creates users correctly
+│   │   ├── LogServiceTest.php — PHPUnit tests for LogService — verifies file validation rejects oversized files and wrong MIME type
+│   │   └── ValidatorTest.php — PHPUnit tests for the Validator helper — tests required, email, and minLength rules with valid and invalid input
+│   └── python — Directory for Python pytest test files — populated during the ML phase
+├── tree.txt — This tree structure with file descriptions
+└── vendor — Composer-managed PHP dependencies — auto-generated, never edited manually, gitignored
 
 26 directories, 79 files

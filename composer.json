@@ -1,0 +1,21 @@
+{
+  "name": "helix/api",
+  "description": "HELIX Cybersecurity Platform API",
+  "type": "project",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "api/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/php/"
+    }
+  }
+}
