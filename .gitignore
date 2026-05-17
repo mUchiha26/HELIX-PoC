@@ -23,3 +23,8 @@ java - module / build /*. class
 *.log
 *.out
 *.toc
+
+
+#Personal files
+HELIX_PoC_Roadmap*
+HELIX_TODO*

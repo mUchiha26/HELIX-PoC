@@ -93,3 +93,13 @@ PHP Sessions rely on a cookie named PHPSESSID to remember who is logged in.
 By default, browsers do not send cookies to APIs for security reasons.
 Setting Access-Control-Allow-Credentials: true tells the browser: "Trust me, it is safe to send the session cookie with this request."
 If this is missing or false, the browser drops the cookie, $\_SESSION becomes empty, and your users will never stay logged in.
+
+The Difference
+
+- $this refers to the current object instance (the specific thing created from the class).
+- self refers to the class itself (the blueprint).
+  Feature $this self
+  Refers to The Object The Class
+  Used for Non-static properties & methods Static properties & methods
+  Symbol Arrow -> Double Colon ::
+  Analogy "Me" "The Blueprint"
