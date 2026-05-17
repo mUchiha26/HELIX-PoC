@@ -1,0 +1,613 @@
+% ==========================================================================
+% HELIX Platform -- PoC Engineering TODO Tracker
+% LaTeX Document
+% ==========================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{etoolbox}
+\usepackage{tabularx}
+\usepackage{makecell}
+
+\geometry{a4paper, top=2cm, bottom=2cm, left=2cm, right=2cm, headheight=15pt}
+
+% ── Colors ───────────────────────────────────────────────────────────────
+\definecolor{helixpurple}{HTML}{3C3489}
+\definecolor{helixpurplelight}{HTML}{EEEDFE}
+\definecolor{helixpurplemid}{HTML}{5A50B0}
+\definecolor{helixteal}{HTML}{0F6E56}
+\definecolor{helixteallight}{HTML}{E1F5EE}
+\definecolor{helixamber}{HTML}{7A4A00}
+\definecolor{helixamberlight}{HTML}{FDF3DC}
+\definecolor{helixgray}{HTML}{3A3A38}
+\definecolor{helixgraylight}{HTML}{F4F3EF}
+\definecolor{helixborder}{HTML}{CCCAC0}
+\definecolor{textsecondary}{HTML}{5A5958}
+
+% ── tcolorbox ────────────────────────────────────────────────────────────
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{phasebox}[2][]{
+    enhanced, breakable,
+    colback=helixpurplelight, colframe=helixpurple,
+    fonttitle=\bfseries\small\color{white},
+    coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=6pt},
+    boxed title style={colback=helixpurple, colframe=helixpurple, arc=3pt},
+    title=#2,
+    left=8pt, right=8pt, top=10pt, bottom=8pt,
+    arc=5pt, boxrule=0.6pt, #1
+}
+
+\newtcolorbox{summarybox}[1][]{
+    enhanced, breakable,
+    colback=helixteallight, colframe=helixteal,
+    fonttitle=\bfseries\small\color{helixteal},
+    left=8pt, right=8pt, top=6pt, bottom=6pt,
+    arc=4pt, boxrule=0.6pt, #1
+}
+
+% ── Section styling ──────────────────────────────────────────────────────
+\titleformat{\section}
+{\normalfont\large\bfseries\color{helixpurple}}
+{\thesection}{10pt}{}
+[\vspace{2pt}\color{helixborder}\rule{\linewidth}{0.3pt}]
+
+\titleformat{\subsection}
+{\normalfont\normalsize\bfseries\color{helixpurplemid}}
+{\thesubsection}{8pt}{}
+
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% ── Header / Footer ──────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{textsecondary}\scshape{HELIX Platform}}
+\fancyhead[R]{\small\color{textsecondary}PoC TODO Tracker}
+\fancyfoot[C]{\small\color{textsecondary}\thepage}
+\fancyfoot[R]{\small\color{textsecondary}2025--2026}
+
+% ── Custom column types ──────────────────────────────────────────────────
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% ── List styling ─────────────────────────────────────────────────────────
+\setlist[itemize]{leftmargin=2em, itemsep=3pt, topsep=4pt}
+
+% ── Hyperref ─────────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=helixpurple,
+    urlcolor=helixteal,
+    citecolor=helixgray,
+    pdftitle={HELIX -- PoC Engineering TODO Tracker},
+    pdfauthor={Yasseene},
+}
+
+% ── Status markers ───────────────────────────────────────────────────────
+% HOW TO USE: Replace the marker text to track progress
+%   \undone   = [ ]  Not started
+%   \done     = [x]  Completed
+%   \progress = [~]  In progress
+%   \blocked  = [!]  Blocked / Needs review
+%
+% Simply edit the command name in the .tex file to change status.
+% Example: change \undone to \done when a task is finished.
+% ─────────────────────────────────────────────────────────────────────────
+
+\newcommand{\undone}{\textcolor{helixgray}{\texttt{[ ] }}}
+\newcommand{\done}{\textcolor{helixteal}{\textbf{[x] }}}
+\newcommand{\progress}{\textcolor{helixpurplemid}{\textbf{[\textasciitilde] }}}
+\newcommand{\blocked}{\textcolor{red}{\textbf{[!] }}}
+
+% ── Custom commands ──────────────────────────────────────────────────────
+\newcommand{\filepath}[1]{\texttt{\small#1}}
+\newcommand{\task}[2]{\item[#1] #2}
+
+% ==========================================================================
+\begin{document}
+\setstretch{1.15}
+
+% ── Title ──────────────────────────────────────────────────────────────────
+\noindent\colorbox{helixpurple}{%
+    \parbox{\dimexpr\textwidth+2\fboxsep\relax}{%
+        \vspace{6pt}
+        \hspace{8pt}\textcolor{white}{\small\scshape{PoC Engineering TODO Tracker}}
+        \vspace{6pt}
+    }%
+}
+\vspace{1.5cm}
+\begin{center}
+    {\fontsize{40}{48}\selectfont\bfseries\color{helixpurple} HELIX}\\[6pt]
+    {\Large\color{textsecondary}Engineering TODO Tracker}\\[4pt]
+    \color{helixborder}\rule{0.5\textwidth}{0.5pt}\\[16pt]
+    {\normalsize\color{textsecondary}Extracted from PoC Roadmap v2.0}
+\end{center}
+\vspace{1cm}
+
+\begin{summarybox}[title=How to Track]
+\begin{tabular}{C{2.5cm} L{12cm}}
+    \toprule
+    \undone & \textbf{Not started} -- Task pending \\
+    \done   & \textbf{Completed} -- Task finished \\
+    \progress & \textbf{In progress} -- Currently working on it \\
+    \blocked & \textbf{Blocked} -- Needs review or unblocking \\
+    \bottomrule
+\end{tabular}
+\vspace{6pt}
+\textbf{To update:} Open \filepath{HELIX\_TODO.tex} and replace the marker command name (e.g., \texttt{\textbackslash undone} $\rightarrow$ \texttt{\textbackslash done}).
+\end{summarybox}
+
+\vspace{1cm}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 0
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 0 -- Project Setup, Git Workflow \& Dev Environment}
+
+\subsection{0.1 -- Git Repository Setup}
+
+\begin{itemize}
+    \task{\done}{Create private repository on GitHub/GitLab}
+    \task{\done}{Clone locally into project root}
+    \task{\done}{Create \filepath{.gitignore}}
+    \task{\undone}{Create \filepath{CHANGELOG.md}}
+    \task{\undone}{Initial commit: \texttt{git commit -m "chore: initialize HELIX project"}}
+    \task{\undone}{Create \texttt{dev} branch: \texttt{git checkout -b dev}}
+\end{itemize}
+
+\subsection{0.2 -- Apache Vhost Configuration}
+
+\begin{itemize}
+    \task{\done}{Install Apache, PHP, and dependencies}
+    \task{\done}{Create \filepath{/etc/httpd/conf.d/helix.conf}}
+    \task{\done}{Add \texttt{127.0.0.1 helix.local} to \filepath{/etc/hosts}}
+    \task{\done}{Fix file permissions}
+    \task{\done}{Verify mod\_rewrite}
+    \task{\done}{Run \texttt{sudo httpd -t} (syntax check)}
+    \task{\done}{Run \texttt{sudo systemctl restart httpd}}
+    \task{\done}{Verify \texttt{http://helix.local} serves frontend}
+    \task{\done}{Create \filepath{api/index.php} test file}
+    \task{\done}{Verify \texttt{http://helix.local/api} returns "API OK"}
+    \task{\done}{Check error logs if anything fails}
+\end{itemize}
+
+\subsection{0.3 -- MySQL Setup}
+
+\begin{itemize}
+    \task{\done}{Start MySQL in XAMPP}
+    \task{\done}{Create database \texttt{helix\_db}}
+    \task{\done}{Create dedicated user \texttt{helix\_user} with limited privileges}
+    \task{\done}{Verify connection via phpMyAdmin}
+\end{itemize}
+
+\subsection{0.4 -- PHP Composer Setup}
+
+\begin{itemize}
+    \task{\undone}{Run \texttt{composer install}}
+    \task{\undone}{Verify \filepath{vendor/autoload.php} was created}
+    \task{\undone}{Add \texttt{require\_once} for autoloader in \filepath{api/index.php}}
+\end{itemize}
+
+\subsection{0.5 -- Environment Configuration}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/config/Environment.php}}
+    \task{\undone}{Create \filepath{api/config/.env} (gitignored, with real values)}
+    \task{\undone}{Create \filepath{api/config/.env.example} (committed, no secrets)}
+\end{itemize}
+
+\subsection{0.6 -- Database Config}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/config/Database.php}}
+    \task{\undone}{Test \texttt{Database::getInstance()} in \filepath{api/index.php}}
+\end{itemize}
+
+\subsection{0.7 -- CORS Configuration}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/config/Cors.php}}
+\end{itemize}
+
+\subsection{0.8 -- Helper Classes}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/helpers/Response.php}}
+    \task{\undone}{Create \filepath{api/helpers/Validator.php}}
+\end{itemize}
+
+\subsection{0.9 -- Front Controller Bootstrap}
+
+\begin{itemize}
+    \task{\undone}{Finalize \filepath{api/index.php} with routing skeleton}
+    \task{\undone}{Verify \texttt{http://helix.local/api/nonexistent} returns 404 JSON}
+\end{itemize}
+
+\subsection{0.10 -- Python Environment}
+
+\begin{itemize}
+    \task{\undone}{Confirm Python $\geq$ 3.10}
+    \task{\undone}{Create \texttt{.venv} inside \filepath{python-module/}}
+    \task{\undone}{Create \filepath{pyproject.toml}}
+    \task{\undone}{Install: \texttt{pip install -e ".[dev]"}}
+    \task{\undone}{Update \texttt{PYTHON\_PATH} in \filepath{.env}}
+\end{itemize}
+
+\subsection{0.11 -- Java Environment}
+
+\begin{itemize}
+    \task{\done}{Confirm JDK $\geq$ 17}
+    \task{\undone}{Review \filepath{java-module/compile.sh}}
+    \task{\undone}{Run \filepath{compile.sh}}
+    \task{\undone}{Verify \texttt{.class} files in \filepath{java-module/build/}}
+\end{itemize}
+
+\subsection{Phase 0 Validation}
+
+\begin{itemize}
+    \task{\undone}{\texttt{http://helix.local} $\rightarrow$ serves \filepath{frontend/index.html}}
+    \task{\undone}{\texttt{http://helix.local/api} $\rightarrow$ JSON response}
+    \task{\undone}{\texttt{http://helix.local/api/nonexistent} $\rightarrow$ 404 JSON}
+    \task{\undone}{\texttt{composer dump-autoload} runs without errors}
+    \task{\undone}{Python: \texttt{python -c "import sklearn; print('OK')"} inside \texttt{.venv}}
+    \task{\undone}{Java: \texttt{javac} compiles all source files}
+    \task{\undone}{Git log shows meaningful commits}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 1
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 1 -- Architecture Design, DB Schema \& UML}
+
+\subsection{1.1 -- Database Schema}
+
+\begin{itemize}
+    \task{\undone}{Verify schema matches UML diagrams}
+    \task{\undone}{Import: \texttt{mysql -u helix\_user -p helix\_db < db/schema.sql}}
+    \task{\undone}{Confirm all 6 tables in phpMyAdmin}
+\end{itemize}
+
+\subsection{1.2 -- API Route Contract}
+
+\begin{itemize}
+    \task{\undone}{Document all 17 routes in \filepath{docs/SDD/API\_REFERENCE.md}}
+    \task{\undone}{Add every route to \filepath{api/index.php} as empty stubs}
+\end{itemize}
+
+\subsection{1.3 -- UML Diagram Validation}
+
+\begin{itemize}
+    \task{\undone}{Review \filepath{use\_case.puml} -- all 7 actors, correct stereotypes}
+    \task{\undone}{Review \filepath{er\_diagram.puml} -- matches schema.sql exactly}
+    \task{\undone}{Review \filepath{class\_services.puml} -- Controller $\rightarrow$ Service $\rightarrow$ Model}
+    \task{\undone}{Review \filepath{sequence\_auth.puml} -- full auth flow}
+    \task{\undone}{Review \filepath{sequence\_log\_ingest.puml} -- pipeline flow}
+    \task{\undone}{Review \filepath{sequence\_ai\_chat.puml} -- AI flow}
+    \task{\undone}{Review \filepath{component.puml} -- architecture overview}
+    \task{\undone}{Review \filepath{activity\_alert.puml} -- alert lifecycle}
+    \task{\undone}{Export all diagrams as PNG to \filepath{docs/UML/png/}}
+\end{itemize}
+
+\subsection{1.4 -- SRS Traceability Matrix}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{docs/traceability\_matrix.md}}
+    \task{\undone}{Map every FR-001 to FR-063 to route, controller, DB table}
+\end{itemize}
+
+\subsection{1.5 -- Seed File}
+
+\begin{itemize}
+    \task{\undone}{Generate real bcrypt hashes for test users}
+    \task{\undone}{Create \filepath{database/seed.sql} with 3 test users}
+    \task{\undone}{Import seed data}
+\end{itemize}
+
+\subsection{Phase 1 Validation}
+
+\begin{itemize}
+    \task{\undone}{Schema imports without error}
+    \task{\undone}{All 6 tables visible in phpMyAdmin}
+    \task{\undone}{All UML diagrams reviewed and corrected}
+    \task{\undone}{All FR-001 to FR-063 in traceability matrix}
+    \task{\undone}{All routes registered as stubs in \filepath{api/index.php}}
+    \task{\undone}{Git commit: \texttt{docs: finalize schema, API contract, UML and traceability matrix}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 2
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 2 -- Authentication Module (FR-001 to FR-007)}
+
+\subsection{2.1 -- Auth Middleware}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/middleware/AuthMiddleware.php}}
+    \task{\undone}{Create \filepath{api/middleware/RoleMiddleware.php}}
+\end{itemize}
+
+\subsection{2.2 -- User Model}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/models/User.php} with all 5 static methods}
+\end{itemize}
+
+\subsection{2.3 -- Auth Service}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/services/AuthService.php} with register, login, logout, currentUser}
+\end{itemize}
+
+\subsection{2.4 -- Auth Controller}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/controllers/AuthController.php} with register, login, logout, me}
+\end{itemize}
+
+\subsection{2.5 -- Register Auth Routes}
+
+\begin{itemize}
+    \task{\undone}{Add 4 auth routes to \filepath{api/index.php}}
+\end{itemize}
+
+\subsection{2.6 -- Frontend: Login Page}
+
+\begin{itemize}
+    \task{\undone}{Build \filepath{frontend/login.html} with form}
+    \task{\undone}{Create \filepath{frontend/js/auth.js}}
+    \task{\undone}{Create \filepath{frontend/js/api.js} shared client}
+\end{itemize}
+
+\subsection{2.7 -- Auth Tests}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{tests/php/AuthServiceTest.php}}
+\end{itemize}
+
+\subsection{2.8 -- Manual Test Checklist}
+
+\begin{itemize}
+    \task{\undone}{POST \texttt{/api/auth/register} valid data $\rightarrow$ 201}
+    \task{\undone}{POST \texttt{/api/auth/register} duplicate username $\rightarrow$ 409}
+    \task{\undone}{POST \texttt{/api/auth/register} invalid email $\rightarrow$ 422}
+    \task{\undone}{POST \texttt{/api/auth/login} valid credentials $\rightarrow$ 200}
+    \task{\undone}{POST \texttt{/api/auth/login} wrong password $\rightarrow$ 401}
+    \task{\undone}{GET \texttt{/api/auth/me} with cookie $\rightarrow$ 200}
+    \task{\undone}{GET \texttt{/api/auth/me} without cookie $\rightarrow$ 401}
+    \task{\undone}{POST \texttt{/api/auth/logout} $\rightarrow$ 200}
+    \task{\undone}{GET \texttt{/api/auth/me} after logout $\rightarrow$ 401}
+    \task{\undone}{Test role-restricted route as learner $\rightarrow$ 403}
+\end{itemize}
+
+\subsection{Phase 2 Validation}
+
+\begin{itemize}
+    \task{\undone}{FR-001 to FR-007 checked in traceability matrix}
+    \task{\undone}{Passwords stored as bcrypt (hash starts with \texttt{\$2y\$})}
+    \task{\undone}{Wrong password returns same error as non-existent user}
+    \task{\undone}{\texttt{session\_regenerate\_id(true)} called on every login}
+    \task{\undone}{Frontend redirects to login on 401}
+    \task{\undone}{Git commit: \texttt{feat(auth): implement authentication, RBAC middleware, login frontend}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 3
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 3 -- Dashboard Module (FR-010 to FR-014)}
+
+\subsection{3.1 -- Client-Side Router}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{frontend/js/router.js}}
+\end{itemize}
+
+\subsection{3.2 -- Dashboard Shell}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{frontend/dashboard.html}}
+    \task{\undone}{Create \filepath{frontend/js/ui.js} (role-aware sidebar)}
+\end{itemize}
+
+\subsection{3.3 -- Dashboard Stats Endpoint}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/controllers/DashboardController.php}}
+    \task{\undone}{Register \texttt{GET /dashboard/stats} route}
+\end{itemize}
+
+\subsection{3.4 -- Dashboard Frontend Module}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{frontend/js/dashboard.js} with Chart.js rendering}
+    \task{\undone}{Include Chart.js CDN in \filepath{dashboard.html}}
+\end{itemize}
+
+\subsection{Phase 3 Validation}
+
+\begin{itemize}
+    \task{\undone}{FR-010 to FR-014 checked in traceability matrix}
+    \task{\undone}{Sidebar shows only role-appropriate links}
+    \task{\undone}{Dashboard renders with zero data (no crashes)}
+    \task{\undone}{Chart.js charts render with empty/zero datasets}
+    \task{\undone}{Client-side routing works (back/forward buttons)}
+    \task{\undone}{Git commit: \texttt{feat(dashboard): implement dashboard shell, stats API, Chart.js}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 4
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 4 -- Log Ingestion Module (FR-020 to FR-023)}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/models/LogEntry.php}}
+    \task{\undone}{Create \filepath{api/services/LogService.php}}
+    \task{\undone}{Create \filepath{api/controllers/LogController.php} (upload, index, show)}
+    \task{\undone}{Register 3 log routes in \filepath{api/index.php}}
+    \task{\undone}{Create \filepath{api/services/JavaBridge.php}}
+    \task{\undone}{Build \filepath{frontend/js/logs.js}}
+    \task{\undone}{Build log upload UI in frontend}
+    \task{\undone}{Test file upload $\rightarrow$ parsed $\rightarrow$ stored in DB}
+    \task{\undone}{FR-020 to FR-023 checked in traceability matrix}
+    \task{\undone}{Git commit: \texttt{feat(logs): implement log ingestion pipeline}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 5
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 5 -- Alert Module (FR-030 to FR-034)}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/models/Alert.php}}
+    \task{\undone}{Create \filepath{api/services/AlertService.php}}
+    \task{\undone}{Create \filepath{api/controllers/AlertController.php} (index, show, updateStatus)}
+    \task{\undone}{Register 3 alert routes in \filepath{api/index.php}}
+    \task{\undone}{Build \filepath{frontend/js/alerts.js}}
+    \task{\undone}{Build alert list + detail UI}
+    \task{\undone}{Implement status transition (open $\rightarrow$ investigating $\rightarrow$ resolved)}
+    \task{\undone}{Test alert CRUD operations}
+    \task{\undone}{FR-030 to FR-034 checked in traceability matrix}
+    \task{\undone}{Git commit: \texttt{feat(alerts): implement alert management module}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 6
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 6 -- ML Detection Module (FR-040 to FR-044)}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/models/AnomalyScore.php}}
+    \task{\undone}{Create \filepath{api/services/MLService.php}}
+    \task{\undone}{Create \filepath{api/controllers/MLController.php} (score, index)}
+    \task{\undone}{Register 2 ML routes in \filepath{api/index.php}}
+    \task{\undone}{Create \filepath{python-module/anomaly\_detector.py}}
+    \task{\undone}{Implement Isolation Forest scoring in Python}
+    \task{\undone}{Implement PHP $\leftrightarrow$ Python bridge via \texttt{exec()}}
+    \task{\undone}{Build \filepath{frontend/js/ml.js} for score visualization}
+    \task{\undone}{Test: log entry $\rightarrow$ Python scoring $\rightarrow$ anomaly\_scores table}
+    \task{\undone}{FR-040 to FR-044 checked in traceability matrix}
+    \task{\undone}{Git commit: \texttt{feat(ml): implement anomaly detection pipeline}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 7
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 7 -- AI Assistant Module (FR-050 to FR-053)}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/models/ChatSession.php}}
+    \task{\undone}{Create \filepath{api/services/AIService.php}}
+    \task{\undone}{Create \filepath{api/controllers/AIController.php} (chat, history)}
+    \task{\undone}{Register 2 AI routes in \filepath{api/index.php}}
+    \task{\undone}{Implement OpenAI API integration in AIService}
+    \task{\undone}{Implement prompt engineering with alert context}
+    \task{\undone}{Implement consent check for Red Team suggestions}
+    \task{\undone}{Build \filepath{frontend/js/chat.js}}
+    \task{\undone}{Build AI chat UI with conversation history}
+    \task{\undone}{Test: alert context $\rightarrow$ AI response $\rightarrow$ stored in chat\_sessions}
+    \task{\undone}{FR-050 to FR-053 checked in traceability matrix}
+    \task{\undone}{Git commit: \texttt{feat(ai): implement AI assistant with OpenAI integration}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 8
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 8 -- Scanner Module (FR-060 to FR-062)}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{api/models/ScanResult.php}}
+    \task{\undone}{Create \filepath{api/services/ScannerService.php}}
+    \task{\undone}{Create \filepath{api/controllers/ScannerController.php} (scan, results)}
+    \task{\undone}{Register 2 scanner routes in \filepath{api/index.php}}
+    \task{\undone}{Implement target scope validation}
+    \task{\undone}{Implement legal consent check}
+    \task{\undone}{Implement async nmap execution via \texttt{exec()}}
+    \task{\undone}{Implement XML output parsing}
+    \task{\undone}{Build \filepath{frontend/js/scanner.js}}
+    \task{\undone}{Build scanner UI with progress tracking}
+    \task{\undone}{Test: scan request $\rightarrow$ nmap $\rightarrow$ results stored}
+    \task{\undone}{FR-060 to FR-062 checked in traceability matrix}
+    \task{\undone}{Git commit: \texttt{feat(scanner): implement red team reconnaissance module}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 9
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 9 -- Integration \& Testing}
+
+\begin{itemize}
+    \task{\undone}{End-to-end test: login $\rightarrow$ upload logs $\rightarrow$ ML scoring $\rightarrow$ alerts $\rightarrow$ AI analysis}
+    \task{\undone}{End-to-end test: login $\rightarrow$ run nmap scan $\rightarrow$ view results}
+    \task{\undone}{Role-based access testing for all 5 roles}
+    \task{\undone}{Security audit: SQL injection, XSS, CSRF checks}
+    \task{\undone}{Performance test: large log file ingestion}
+    \task{\undone}{Error handling: all API error paths return proper status codes}
+    \task{\undone}{Frontend: all pages handle empty states gracefully}
+    \task{\undone}{Documentation: update \filepath{README.md} with setup instructions}
+    \task{\undone}{Git commit: \texttt{test: integration testing and bug fixes}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 10
+% ══════════════════════════════════════════════════════════════════════════
+\section{PHASE 10 -- Docker \& Deployment}
+
+\begin{itemize}
+    \task{\undone}{Create \filepath{Dockerfile} for PHP API}
+    \task{\undone}{Create \filepath{Dockerfile} for Python ML module}
+    \task{\undone}{Create \filepath{docker-compose.yml} (Apache + MySQL + PHP + Python)}
+    \task{\undone}{Configure Apache vhost for container environment}
+    \task{\undone}{Test full stack in Docker}
+    \task{\undone}{Write deployment guide}
+    \task{\undone}{Git commit: \texttt{chore: dockerize HELIX platform}}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% SUMMARY
+% ══════════════════════════════════════════════════════════════════════════
+\vspace{1cm}
+\begin{summarybox}[title=Progress Summary]
+\begin{center}
+\begin{tabular}{L{5cm} C{2cm} C{2cm} C{2cm} C{2cm}}
+    \toprule
+    \textbf{Phase} & \textbf{Total} & \textbf{Done} & \textbf{In Progress} & \textbf{Blocked} \\
+    \midrule
+    Phase 0: Setup & 29 & 16 & 0 & 0 \\
+    Phase 1: Design & 12 & 0 & 0 & 0 \\
+    Phase 2: Auth & 19 & 0 & 0 & 0 \\
+    Phase 3: Dashboard & 8 & 0 & 0 & 0 \\
+    Phase 4: Logs & 11 & 0 & 0 & 0 \\
+    Phase 5: Alerts & 11 & 0 & 0 & 0 \\
+    Phase 6: ML & 12 & 0 & 0 & 0 \\
+    Phase 7: AI & 13 & 0 & 0 & 0 \\
+    Phase 8: Scanner & 13 & 0 & 0 & 0 \\
+    Phase 9: Testing & 9 & 0 & 0 & 0 \\
+    Phase 10: Docker & 7 & 0 & 0 & 0 \\
+    \midrule
+    \textbf{Total} & \textbf{144} & \textbf{16} & \textbf{0} & \textbf{0} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\end{summarybox}
+
+\end{document}

@@ -1,0 +1,1985 @@
+% ==========================================================================
+% HELIX Platform -- PoC Engineering Roadmap
+% LaTeX Document
+% ==========================================================================
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{etoolbox}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{makecell}
+
+\geometry{a4paper, top=2cm, bottom=2cm, left=2cm, right=2cm, headheight=15pt}
+
+% ── Colors ───────────────────────────────────────────────────────────────
+\definecolor{helixpurple}{HTML}{3C3489}
+\definecolor{helixpurplelight}{HTML}{EEEDFE}
+\definecolor{helixpurplemid}{HTML}{5A50B0}
+\definecolor{helixteal}{HTML}{0F6E56}
+\definecolor{helixteallight}{HTML}{E1F5EE}
+\definecolor{helixamber}{HTML}{7A4A00}
+\definecolor{helixamberlight}{HTML}{FDF3DC}
+\definecolor{helixgray}{HTML}{3A3A38}
+\definecolor{helixgraylight}{HTML}{F4F3EF}
+\definecolor{helixborder}{HTML}{CCCAC0}
+\definecolor{textsecondary}{HTML}{5A5958}
+\definecolor{codebg}{HTML}{F8F7F4}
+\definecolor{codeframe}{HTML}{CCCAC0}
+
+% ── tcolorbox ────────────────────────────────────────────────────────────
+\tcbuselibrary{skins,breakable,listings}
+
+\newtcolorbox{phasebox}[2][]{
+    enhanced, breakable,
+    colback=helixpurplelight, colframe=helixpurple,
+    fonttitle=\bfseries\small\color{white},
+    coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=6pt},
+    boxed title style={colback=helixpurple, colframe=helixpurple, arc=3pt},
+    title=#2,
+    left=8pt, right=8pt, top=10pt, bottom=8pt,
+    arc=5pt, boxrule=0.6pt, #1
+}
+
+\newtcolorbox{taskbox}[1][]{
+    enhanced, breakable,
+    colback=white, colframe=helixborder,
+    left=8pt, right=8pt, top=6pt, bottom=6pt,
+    arc=4pt, boxrule=0.4pt, #1
+}
+
+\newtcolorbox{infobox}[1][]{
+    enhanced, breakable,
+    colback=helixteallight, colframe=helixteal,
+    fonttitle=\bfseries\small\color{helixteal},
+    left=8pt, right=8pt, top=6pt, bottom=6pt,
+    arc=4pt, boxrule=0.6pt, #1
+}
+
+\newtcolorbox{warnbox}[1][]{
+    enhanced, breakable,
+    colback=helixamberlight, colframe=helixamber,
+    fonttitle=\bfseries\small\color{helixamber},
+    left=8pt, right=8pt, top=6pt, bottom=6pt,
+    arc=4pt, boxrule=0.6pt, #1
+}
+
+% ── Listings (code blocks) ───────────────────────────────────────────────
+\lstdefinestyle{helixcode}{
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    framerule=0.4pt,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{helixpurplemid}\bfseries,
+    commentstyle=\color{textsecondary}\itshape,
+    stringstyle=\color{helixteal},
+    numbers=left,
+    numberstyle=\tiny\color{helixborder},
+    numbersep=5pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    tabsize=4,
+    xleftmargin=12pt,
+    xrightmargin=4pt,
+}
+
+\lstset{style=helixcode}
+
+\lstdefinelanguage{JavaScript}{
+    keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, const, let, async, await, export, default, import, from, class, extends, super, this, yield},
+    keywordstyle=\color{helixpurplemid}\bfseries,
+    ndkeywords={=, =>, ===, !=, <, >, <=, >=, +=, -=, *=, /=},
+    sensitive=true,
+    comment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[b]`,
+}
+
+\lstdefinelanguage{JSON}{
+    keywords={true, false, null},
+    keywordstyle=\color{helixpurplemid}\bfseries,
+    sensitive=true,
+    morestring=[b]",
+    morecomment=[l]{//},
+}
+
+% ── Section styling ──────────────────────────────────────────────────────
+\titleformat{\chapter}[block]
+{\normalfont\LARGE\bfseries\color{helixpurple}}
+{\thechapter.}{12pt}{}
+[\vspace{3pt}\color{helixborder}\rule{\linewidth}{0.4pt}\vspace{6pt}]
+
+\titleformat{\section}
+{\normalfont\large\bfseries\color{helixgray}}
+{\thesection}{10pt}{}
+[\vspace{2pt}\color{helixborder}\rule{\linewidth}{0.3pt}]
+
+\titleformat{\subsection}
+{\normalfont\normalsize\bfseries\color{helixpurplemid}}
+{\thesubsection}{8pt}{}
+
+\titlespacing*{\chapter}{0pt}{10pt}{22pt}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+
+% ── Header / Footer ──────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{textsecondary}\scshape{HELIX Platform}}
+\fancyhead[R]{\small\color{textsecondary}PoC Engineering Roadmap}
+\fancyfoot[C]{\small\color{textsecondary}\thepage}
+\fancyfoot[R]{\small\color{textsecondary}2025--2026}
+
+% ── Custom column types ──────────────────────────────────────────────────
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% ── List styling ─────────────────────────────────────────────────────────
+\setlist[itemize]{leftmargin=1.5em, itemsep=2pt, topsep=3pt}
+\setlist[enumerate]{leftmargin=1.7em, itemsep=2pt, topsep=3pt}
+
+% ── Hyperref ─────────────────────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=helixpurple,
+    urlcolor=helixteal,
+    citecolor=helixgray,
+    pdftitle={HELIX -- PoC Engineering Roadmap},
+    pdfauthor={Yasseene},
+    pdfsubject={Cybersecurity Operations Platform},
+}
+
+% ── Custom commands ──────────────────────────────────────────────────────
+\newcommand{\todo}{\textcolor{helixamber}{\textbf{[ ]}}}
+\newcommand{\done}{\textcolor{helixteal}{\textbf{[x]}}}
+\newcommand{\inprogress}{\textcolor{helixpurplemid}{\textbf{[~]}}}
+\newcommand{\blocked}{\textcolor{red}{\textbf{[!]}}}
+
+\newcommand{\filepath}[1]{\texttt{\small#1}}
+
+% ==========================================================================
+\begin{document}
+\setstretch{1.15}
+
+% ── Cover ──────────────────────────────────────────────────────────────────
+\begin{titlepage}
+    \thispagestyle{empty}
+    \noindent\colorbox{helixpurple}{%
+        \parbox{\dimexpr\textwidth+2\fboxsep\relax}{%
+            \vspace{8pt}
+            \hspace{8pt}\textcolor{white}{\small\scshape{Proof of Concept Engineering Roadmap}}
+            \vspace{8pt}
+        }%
+    }
+    \vspace{3cm}
+    \begin{center}
+        {\fontsize{52}{60}\selectfont\bfseries\color{helixpurple} HELIX}\\[10pt]
+        {\Large\color{textsecondary}Cybersecurity Operations Platform}\\[8pt]
+        \color{helixborder}\rule{0.65\textwidth}{0.5pt}\\[30pt]
+        {\large\color{textsecondary}PoC Engineering Roadmap}\\[6pt]
+        {\normalsize\color{textsecondary}Learn \& Build Hybrid Approach}
+    \end{center}
+    \vfill
+    \begin{center}
+        \begin{tabular}{L{5.2cm} L{7.5cm}}
+            \toprule
+            \textbf{Document Type}    & Engineering Roadmap \\
+            \textbf{Project Phase}    & Proof of Concept (PoC) \\
+            \textbf{Document Version} & 2.0 \\
+            \textbf{Academic Year}    & 2025 -- 2026 \\
+            \textbf{Author}           & Yasseene \\
+            \textbf{Classification}   & Academic -- Confidential \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \vspace{1.5cm}
+    \noindent\colorbox{helixgraylight}{%
+        \parbox{\dimexpr\textwidth+2\fboxsep\relax}{%
+            \vspace{8pt}
+            \hspace{8pt}\small\color{textsecondary}
+            Tek-Up University \hfill Ariana, Tunisia \hfill Academic Year 2025--2026
+            \vspace{8pt}
+        }%
+    }
+\end{titlepage}
+
+{
+    \hypersetup{linkcolor=black}
+    \tableofcontents
+    \thispagestyle{empty}
+}
+\clearpage
+
+% ══════════════════════════════════════════════════════════════════════════
+% INTRODUCTION
+% ══════════════════════════════════════════════════════════════════════════
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+
+This document is your personal engineering execution blueprint, adapted to your actual project architecture: a decoupled SPA frontend, a layered PHP API (Controller $\rightarrow$ Service $\rightarrow$ Model), a Python ML module, and a Java utility module. Every file reference in this roadmap maps to a real file in your tree. Follow it sequentially, create files only when you reach them, and mark your progress as you go.
+
+\section*{How to Use This Roadmap}
+
+\begin{center}
+\begin{tabular}{C{2cm} L{12cm}}
+    \toprule
+    \done\ Not started & Mark as completed when done \\
+    \inprogress\ In progress & Currently working on \\
+    \todo\ Completed & Task finished \\
+    \blocked\ Blocked & Needs review or unblocking \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{infobox}[title=Core Principle]
+You do not move to the next phase until the current phase's \textbf{Definition of Done} is satisfied. You create files only when you need them -- not before.
+\end{infobox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% ARCHITECTURE REFERENCE
+% ══════════════════════════════════════════════════════════════════════════
+\chapter*{Architecture Reference}
+\addcontentsline{toc}{chapter}{Architecture Reference}
+
+Before starting, internalize this flow. Every feature you build will follow it:
+
+\begin{verbatim}
+Browser (frontend/)
+    |
+    |  HTTP fetch() via api.js
+    v
+api/index.php          <- Front Controller: parses route, applies middleware, dispatches
+    |
+    |-- middleware/AuthMiddleware.php     <- Is the user logged in?
+    |-- middleware/RoleMiddleware.php     <- Is the user allowed?
+    |
+    v
+api/controllers/XController.php         <- Parse request, call service, return response
+    |
+    v
+api/services/XService.php               <- All business logic lives here
+    |
+    v
+api/models/X.php                        <- All DB queries live here (PDO)
+    |
+    v
+MySQL (helix_db)
+\end{verbatim}
+
+\textbf{Key architectural decisions already made:}
+
+\begin{itemize}
+    \item The frontend is completely decoupled -- it never touches PHP directly
+    \item \filepath{api/index.php} is the single entry point -- all routes go through it
+    \item \filepath{api/config/Cors.php} handles CORS because frontend and API are on different paths
+    \item \filepath{api/helpers/Response.php} standardizes all JSON responses
+    \item \filepath{api/helpers/Validator.php} centralizes input validation
+    \item \filepath{api/services/JavaBridge.php} is the only place that touches \texttt{shell\_exec()}
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% GLOBAL PHASE MAP
+% ══════════════════════════════════════════════════════════════════════════
+\chapter*{Global Phase Map}
+\addcontentsline{toc}{chapter}{Global Phase Map}
+
+\begin{verbatim}
+PHASE 0 -> PHASE 1 -> PHASE 2 -> PHASE 3 -> PHASE 4 -> PHASE 5 -> PHASE 6 -> PHASE 7 -> PHASE 8 -> PHASE 9 -> PHASE 10
+  |           |           |           |           |           |           |           |           |          |           |
+Setup     Architecture  Auth +    Dashboard   Log         Alert       ML          AI        Scanner  Integration  Docker
+& Git     & DB Design   RBAC      & Routing  Ingestion   Module     Detection  Assistant    Module   & Testing   & Deploy
+\end{verbatim}
+
+\textbf{Dependency chain (strict):}
+
+\begin{itemize}
+    \item Phase 1 requires Phase 0
+    \item Phase 2 requires Phase 1 (DB schema + routing foundation in place)
+    \item Phase 3 requires Phase 2 (auth middleware working, frontend routing exists)
+    \item Phase 4 requires Phase 3 (dashboard shell exists as UI home)
+    \item Phase 5 requires Phase 4 (log data is the raw input for alerts + ML)
+    \item Phase 6 requires Phase 5 (alerts are generated from scored logs)
+    \item Phase 7 requires Phase 5 (ML needs log data to score)
+    \item Phase 8 requires Phase 6 (AI analyzes alerts enriched by ML scores)
+    \item Phase 9 requires Phase 2 (scanner only needs auth, independent of logs/ML)
+    \item Phase 10 requires Phases 2--9 (all modules complete and individually tested)
+    \item Phase 11 requires Phase 10 (containerize only a stable application)
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 0
+% ══════════════════════════════════════════════════════════════════════════
+\chapter{PHASE 0 -- Project Setup, Git Workflow \& Development Environment}
+
+\begin{phasebox}{Phase 0: Setup \& Environment}
+\textbf{Why this comes first:} Without a reproducible environment and version control, everything you build is fragile. One wrong XAMPP config, one missing \filepath{.gitignore}, and you lose hours. This phase costs 2 hours and saves 20.
+\end{phasebox}
+
+\section*{Objective}
+Establish the complete development environment, Git discipline, Apache serving strategy, Composer setup, and Python environment -- before writing a single line of application logic.
+
+\section*{Learning Goals}
+\begin{itemize}
+    \item Understand Git branching strategy for solo development
+    \item Understand how Apache serves two directories under one vhost (frontend + api)
+    \item Understand Composer as PHP's dependency manager and autoloader
+    \item Understand \filepath{pyproject.toml} vs \filepath{requirements.txt} (and why you're using the former)
+    \item Understand the Front Controller pattern (\filepath{api/index.php})
+\end{itemize}
+
+\section*{Key Theoretical Concepts}
+\begin{itemize}
+    \item \textbf{Git Flow (simplified):} \texttt{main} = stable releases, \texttt{dev} = integration branch, \texttt{feature/*} = active work
+    \item \textbf{Apache vhost + Alias directive:} How to serve \filepath{frontend/} at \texttt{/} and \filepath{api/} at \texttt{/api} from one domain
+    \item \textbf{Composer autoloading (PSR-4):} How \texttt{use App\textbackslash Controllers\textbackslash AuthController} resolves to a file path automatically
+    \item \textbf{Front Controller:} One entry point that routes all requests -- no 30 separate PHP files each handling their own routing
+    \item \textbf{CORS (Cross-Origin Resource Sharing):} Why the browser blocks your \texttt{fetch('/api/...')} without the right headers
+\end{itemize}
+
+\section{0.1 -- Git Repository Setup}
+
+\begin{itemize}
+    \item[\done] Create private repository on GitHub/GitLab
+    \item[\done] Clone locally into your project root
+    \item[\done] Create \filepath{.gitignore}:
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+# PHP
+vendor/
+composer.lock (optional)
+
+# Python
+python-module/.venv/
+python-module/__pycache__/
+python-module/models/*.joblib
+
+# Java
+java-module/build/*.class
+
+# Environment
+api/config/.env
+.env
+
+# IDE
+.vscode/
+.idea/
+*.DS_Store
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Create \filepath{CHANGELOG.md} -- update at end of every phase
+    \item[\todo] Initial commit: \texttt{git commit -m "chore: initialize HELIX project"}
+    \item[\todo] Create \texttt{dev} branch: \texttt{git checkout -b dev}
+\end{itemize}
+
+\textbf{Branching strategy:}
+\begin{itemize}
+    \item Work on \texttt{feature/*} branches cut from \texttt{dev}
+    \item Merge \texttt{feature/*} $\rightarrow$ \texttt{dev} when a phase is complete and tested
+    \item Merge \texttt{dev} $\rightarrow$ \texttt{main} only when a full milestone works end-to-end
+\end{itemize}
+
+\section{0.2 -- Apache Vhost Configuration (Fedora/RHEL)}
+
+This is the critical decision from the review. You have \filepath{frontend/} and \filepath{api/} as siblings. Define how Apache serves both under \texttt{helix.local}. On Fedora, Apache config lives in \filepath{/etc/httpd/}.
+
+\subsection*{Step 1: Install Apache, PHP, and dependencies}
+
+\begin{lstlisting}[language=bash]
+sudo dnf install httpd php php-cli
+sudo dnf install php-pdo php-pdo_mysql php-json
+sudo systemctl start httpd
+sudo systemctl enable httpd
+\end{lstlisting}
+
+Verify Apache is running: \texttt{curl http://localhost}
+
+\subsection*{Step 2: Create vhost configuration}
+
+Create \filepath{/etc/httpd/conf.d/helix.conf} (requires \texttt{sudo}):
+
+\begin{lstlisting}[language=bash]
+<VirtualHost *:80>
+    ServerName helix.local
+    DocumentRoot /home/yasseene/HELIX/frontend
+
+    <Directory /home/yasseene/HELIX/frontend>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule ^(.*)$ index.html [QSA,L]
+        </IfModule>
+    </Directory>
+
+    Alias /api /home/yasseene/HELIX/api
+
+    <Directory /home/yasseene/HELIX/api>
+        Options FollowSymLinks
+        AllowOverride All
+        Require all granted
+
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /api
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule ^(.*)$ index.php?path=$1 [QSA,L]
+        </IfModule>
+    </Directory>
+
+    <FilesMatch \.php$>
+        SetHandler application/x-httpd-php
+    </FilesMatch>
+
+    ErrorLog /var/log/httpd/helix_error.log
+    CustomLog /var/log/httpd/helix_access.log combined
+</VirtualHost>
+\end{lstlisting}
+
+\subsection*{Step 3: Enable mod\_rewrite}
+
+On Fedora/RHEL, \texttt{mod\_rewrite} is usually enabled by default. Verify:
+
+\begin{lstlisting}[language=bash]
+grep -i "rewrite" /etc/httpd/conf.modules.d/*.conf
+\end{lstlisting}
+
+\subsection*{Step 4: Add to system hosts file}
+
+\begin{lstlisting}[language=bash]
+echo "127.0.0.1    helix.local" | sudo tee -a /etc/hosts
+ping helix.local
+\end{lstlisting}
+
+\subsection*{Step 5: Fix file permissions}
+
+\begin{lstlisting}[language=bash]
+sudo usermod -a -G $(id -gn) apache
+chmod 755 /home/yasseene/HELIX
+chmod 755 /home/yasseene/HELIX/{frontend,api}
+\end{lstlisting}
+
+\subsection*{Step 6: Validate and restart Apache}
+
+\begin{lstlisting}[language=bash]
+sudo httpd -t
+sudo systemctl restart httpd
+sudo systemctl status httpd
+\end{lstlisting}
+
+\textbf{Consequence for \filepath{api.js}:} All frontend API calls will use:
+
+\begin{lstlisting}[language=JavaScript]
+const API_BASE = "/api"; // relative -- works on same origin
+\end{lstlisting}
+
+Never hardcode \texttt{http://localhost/...} -- relative paths survive domain changes.
+
+\begin{itemize}
+    \item[\done] Install Apache, PHP, and dependencies
+    \item[\done] Create \filepath{/etc/httpd/conf.d/helix.conf} with vhost above
+    \item[\done] Add \texttt{127.0.0.1 helix.local} to \filepath{/etc/hosts}
+    \item[\done] Fix permissions
+    \item[\done] Verify mod\_rewrite
+    \item[\done] Run \texttt{sudo httpd -t} (syntax check)
+    \item[\done] Run \texttt{sudo systemctl restart httpd}
+    \item[\done] Verify: \texttt{http://helix.local} serves \filepath{frontend/index.html}
+    \item[\done] Create \filepath{api/index.php} with \texttt{echo "API OK";} temporarily
+    \item[\done] Verify: \texttt{http://helix.local/api} returns "API OK"
+    \item[\done] Check logs: \texttt{tail -f /var/log/httpd/helix\_error.log} if anything fails
+\end{itemize}
+
+\section{0.3 -- MySQL Setup}
+
+\begin{itemize}
+    \item[\done] Start MySQL in XAMPP
+    \item[\done] Create database: \texttt{helix\_db}
+    \item[\done] Create dedicated user with limited privileges:
+\end{itemize}
+
+\begin{lstlisting}[language=SQL]
+CREATE USER 'helix_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT SELECT, INSERT, UPDATE, DELETE ON helix_db.* TO 'helix_user'@'localhost';
+FLUSH PRIVILEGES;
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Verify connection via phpMyAdmin
+\end{itemize}
+
+\section{0.4 -- PHP Composer Setup}
+
+\filepath{composer.json}:
+
+\begin{lstlisting}[language=JSON]
+{
+  "name": "helix/api",
+  "description": "HELIX Cybersecurity Platform API",
+  "type": "project",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "api/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/php/"
+    }
+  }
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Run: \texttt{composer install}
+    \item[\todo] Verify \filepath{vendor/autoload.php} was created
+    \item[\todo] Add \texttt{require\_once \_\_DIR\_\_ . '/../../vendor/autoload.php';} to \filepath{api/index.php}
+\end{itemize}
+
+\textbf{Why PSR-4 matters:} With this config, \texttt{use App\textbackslash Controllers\textbackslash AuthController} automatically maps to \filepath{api/controllers/AuthController.php}. You never write manual \texttt{require} statements for your own classes.
+
+\section{0.5 -- Environment Configuration}
+
+\filepath{api/config/Environment.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Config;
+
+class Environment
+{
+    private static array $vars = [];
+
+    public static function load(string $envFile): void
+    {
+        if (!file_exists($envFile)) return;
+
+        foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            if (str_starts_with(trim($line), '#')) continue;
+            [$key, $value] = explode('=', $line, 2);
+            self::$vars[trim($key)] = trim($value);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        return self::$vars[$key] ?? $_ENV[$key] ?? getenv($key) ?: $default;
+    }
+}
+\end{lstlisting}
+
+Create \filepath{api/config/.env} (gitignored):
+
+\begin{lstlisting}[language=bash]
+DB_HOST=localhost
+DB_NAME=helix_db
+DB_USER=helix_user
+DB_PASS=your_password
+OPENAI_API_KEY=sk-...
+SESSION_LIFETIME=3600
+PYTHON_PATH=C:/path/to/.venv/Scripts/python.exe
+PYTHON_SCRIPT=python-module/anomaly_detector.py
+JAVA_BUILD_PATH=java-module/build
+\end{lstlisting}
+
+Create \filepath{api/config/.env.example} (committed to git -- no real values):
+
+\begin{lstlisting}[language=bash]
+DB_HOST=localhost
+DB_NAME=helix_db
+DB_USER=helix_user
+DB_PASS=
+OPENAI_API_KEY=
+SESSION_LIFETIME=3600
+PYTHON_PATH=
+PYTHON_SCRIPT=python-module/anomaly_detector.py
+JAVA_BUILD_PATH=java-module/build
+\end{lstlisting}
+
+\section{0.6 -- Database Config}
+
+\filepath{api/config/Database.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Config;
+
+use PDO;
+use PDOException;
+
+class Database
+{
+    private static ?PDO $instance = null;
+
+    public static function getInstance(): PDO
+    {
+        if (self::$instance === null) {
+            $host = Environment::get('DB_HOST', 'localhost');
+            $name = Environment::get('DB_NAME');
+            $user = Environment::get('DB_USER');
+            $pass = Environment::get('DB_PASS');
+
+            $dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
+            $options = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ];
+
+            try {
+                self::$instance = new PDO($dsn, $user, $pass, $options);
+            } catch (PDOException $e) {
+                error_log("DB connection failed: " . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['error' => 'Database unavailable']);
+                exit;
+            }
+        }
+
+        return self::$instance;
+    }
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Test: add a \texttt{Database::getInstance();} call to \filepath{api/index.php} temporarily $\rightarrow$ no error
+\end{itemize}
+
+\section{0.7 -- CORS Configuration}
+
+\filepath{api/config/Cors.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Config;
+
+class Cors
+{
+    public static function handle(): void
+    {
+        $allowedOrigins = ['http://helix.local', 'http://localhost'];
+        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+        if (in_array($origin, $allowedOrigins, true)) {
+            header("Access-Control-Allow-Origin: {$origin}");
+        }
+
+        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+        header('Access-Control-Allow-Credentials: true');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(204);
+            exit;
+        }
+    }
+}
+\end{lstlisting}
+
+\section{0.8 -- Helper Classes}
+
+\filepath{api/helpers/Response.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Helpers;
+
+class Response
+{
+    public static function json(mixed $data, int $status = 200): void
+    {
+        http_response_code($status);
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit;
+    }
+
+    public static function success(mixed $data = null, string $message = 'OK', int $status = 200): void
+    {
+        self::json(['success' => true, 'message' => $message, 'data' => $data], $status);
+    }
+
+    public static function error(string $message, int $status = 400): void
+    {
+        self::json(['success' => false, 'error' => $message], $status);
+    }
+
+    public static function unauthorized(): void
+    {
+        self::error('Unauthorized', 401);
+    }
+
+    public static function forbidden(): void
+    {
+        self::error('Forbidden', 403);
+    }
+}
+\end{lstlisting}
+
+\filepath{api/helpers/Validator.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Helpers;
+
+class Validator
+{
+    private array $errors = [];
+
+    public function required(string $field, mixed $value): self
+    {
+        if (empty($value) && $value !== '0') {
+            $this->errors[$field] = "{$field} is required";
+        }
+        return $this;
+    }
+
+    public function email(string $field, mixed $value): self
+    {
+        if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            $this->errors[$field] = "{$field} must be a valid email";
+        }
+        return $this;
+    }
+
+    public function minLength(string $field, mixed $value, int $min): self
+    {
+        if (strlen((string)$value) < $min) {
+            $this->errors[$field] = "{$field} must be at least {$min} characters";
+        }
+        return $this;
+    }
+
+    public function passes(): bool
+    {
+        return empty($this->errors);
+    }
+
+    public function errors(): array
+    {
+        return $this->errors;
+    }
+}
+\end{lstlisting}
+
+\section{0.9 -- Front Controller Bootstrap}
+
+\filepath{api/index.php} -- the single entry point for all API calls:
+
+\begin{lstlisting}[language=PHP]
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Config\Environment;
+use App\Config\Cors;
+use App\Helpers\Response;
+
+// 1. Load environment
+Environment::load(__DIR__ . '/config/.env');
+
+// 2. Handle CORS (must be before any output)
+Cors::handle();
+
+// 3. Parse route
+$method = $_SERVER['REQUEST_METHOD'];
+$uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// Strip /api prefix (added by Apache Alias)
+$uri = preg_replace('#^/api#', '', $uri);
+$uri = rtrim($uri, '/') ?: '/';
+
+// 4. Route dispatch (will grow with each phase)
+$routes = [];
+
+// Each phase will add routes here:
+// $routes['POST']['/auth/login'] = [AuthController::class, 'login'];
+
+// 5. Dispatch
+if (isset($routes[$method][$uri])) {
+    [$controllerClass, $action] = $routes[$method][$uri];
+    $controller = new $controllerClass();
+    $controller->$action();
+} else {
+    Response::error('Route not found', 404);
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Verify: \texttt{http://helix.local/api/nonexistent} returns \texttt{\{"success":false,"error":"Route not found"\}}
+\end{itemize}
+
+\section{0.10 -- Python Environment}
+
+\begin{itemize}
+    \item[\todo] Confirm Python $\geq$ 3.10: \texttt{python --version}
+    \item[\todo] Create virtual environment inside \filepath{python-module/}:
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+cd python-module
+python -m venv .venv
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Create \filepath{pyproject.toml}:
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+[project]
+name = "helix-python-module"
+version = "0.1.0"
+description = "Isolation Forest anomaly detection for HELIX"
+requires-python = ">=3.10"
+
+[project.dependencies]
+scikit-learn = ">=1.3.0"
+pandas = ">=2.0.0"
+numpy = ">=1.24.0"
+joblib = ">=1.3.0"
+mysql-connector-python = ">=8.0.0"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.backends.legacy:BuildBackend"
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Install: \texttt{pip install -e ".[dev]"} (inside \texttt{.venv})
+    \item[\todo] Update \texttt{PYTHON\_PATH} in \filepath{.env} to point to \texttt{.venv} python binary
+\end{itemize}
+
+\section{0.11 -- Java Environment}
+
+\begin{itemize}
+    \item[\done] Confirm JDK $\geq$ 17: \texttt{java -version}, \texttt{javac -version}
+    \item[\todo] Review \filepath{java-module/compile.sh} -- understand what it does:
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+#!/bin/bash
+mkdir -p build
+javac -d build src/LogFormat.java src/ParseResult.java src/LogParser.java src/HashScanner.java
+echo "Compilation complete"
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Run \filepath{compile.sh} (or equivalent on Windows with \texttt{javac})
+    \item[\todo] Verify \texttt{.class} files appear in \filepath{java-module/build/}
+\end{itemize}
+
+\section*{Deliverables}
+
+\begin{itemize}
+    \item Git repo with clean structure, \filepath{.gitignore}, \filepath{CHANGELOG.md}
+    \item Apache vhost serving \filepath{frontend/} at root, \filepath{api/} at \texttt{/api}
+    \item Composer installed with PSR-4 autoloading configured
+    \item \filepath{api/config/Environment.php}, \filepath{Database.php}, \filepath{Cors.php}
+    \item \filepath{api/helpers/Response.php}, \filepath{Validator.php}
+    \item \filepath{api/index.php} Front Controller with basic routing skeleton
+    \item \filepath{python-module/pyproject.toml} (replacing \filepath{requirements.txt})
+    \item Java module compiling without errors
+\end{itemize}
+
+\section*{Validation Criteria}
+
+\begin{itemize}
+    \item[\todo] \texttt{http://helix.local} $\rightarrow$ serves \filepath{frontend/index.html}
+    \item[\todo] \texttt{http://helix.local/api} $\rightarrow$ JSON response (not HTML)
+    \item[\todo] \texttt{http://helix.local/api/nonexistent} $\rightarrow$ \texttt{\{"success":false,"error":"Route not found"\}}
+    \item[\todo] \texttt{composer dump-autoload} runs without errors
+    \item[\todo] Python: \texttt{python -c "import sklearn; print('OK')"} inside \texttt{.venv}
+    \item[\todo] Java: \texttt{javac} compiles all source files
+    \item[\todo] Git log shows meaningful commits
+\end{itemize}
+
+\section*{Common Mistakes to Avoid}
+
+\begin{warnbox}[title=Watch Out]
+\begin{itemize}
+    \item[$\times$] Skipping the Apache Alias directive -- frontend won't be able to call \texttt{/api/*}
+    \item[$\times$] Committing \filepath{.env} -- real credentials must stay out of git
+    \item[$\times$] Keeping \filepath{requirements.txt} -- you decided to use \filepath{pyproject.toml}
+    \item[$\times$] Not setting up PSR-4 autoloading -- you'll write manual \texttt{require} statements everywhere
+    \item[$\times$] Writing route logic directly in \filepath{api/index.php} instead of dispatching to controllers
+\end{itemize}
+\end{warnbox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 1
+% ══════════════════════════════════════════════════════════════════════════
+\chapter{PHASE 1 -- Architecture Design, Database Schema \& UML}
+
+\begin{phasebox}{Phase 1: Architecture \& Design}
+\textbf{Why this comes before coding:} You already have \texttt{.puml} diagram files. This phase is about validating them, locking the database schema, and mapping every SRS requirement to a concrete implementation path. Changing the schema after writing 5 models is expensive.
+\end{phasebox}
+
+\section*{Objective}
+Finalize and validate the complete database schema, UML diagrams, API contract, and traceability matrix. Nothing functional gets built in this phase -- only design artifacts.
+
+\section*{Learning Goals}
+\begin{itemize}
+    \item Understand relational database normalization (1NF, 2NF, 3NF)
+    \item Understand how to derive a schema from use cases and actors
+    \item Understand REST API contract-first design
+    \item Understand what each UML diagram type communicates and to whom
+\end{itemize}
+
+\section*{Key Theoretical Concepts}
+\begin{itemize}
+    \item \textbf{Entity-Relationship vs Class Diagram:} ER models data; Class models code structure
+    \item \textbf{Foreign key CASCADE rules:} \texttt{ON DELETE CASCADE} vs \texttt{ON DELETE SET NULL} -- when to use each
+    \item \textbf{ENUM vs lookup table:} ENUMs are fast and sufficient for a PoC; lookup tables scale better
+    \item \textbf{REST resource naming:} \texttt{/alerts} not \texttt{/getAlerts}; \texttt{/alerts/\{id\}/status} not \texttt{/updateAlertStatus}
+    \item \textbf{HTTP status codes:} 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 422 Unprocessable Entity, 500 Internal Server Error
+\end{itemize}
+
+\section{1.1 -- Database Schema}
+
+\filepath{db/schema.sql} -- finalize all tables before writing a single model:
+
+\begin{lstlisting}[language=SQL]
+CREATE DATABASE IF NOT EXISTS helix_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE helix_db;
+
+CREATE TABLE users (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    username      VARCHAR(50)  UNIQUE NOT NULL,
+    email         VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role          ENUM('administrator','blue_team','red_team','purple_team','learner') NOT NULL,
+    is_active     BOOLEAN      DEFAULT TRUE,
+    created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    last_login    TIMESTAMP    NULL
+);
+
+CREATE TABLE log_entries (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    filename    VARCHAR(255),
+    source_ip   VARCHAR(45),
+    timestamp   TIMESTAMP    NOT NULL,
+    severity    ENUM('LOW','MEDIUM','HIGH','CRITICAL') DEFAULT 'LOW',
+    event_type  VARCHAR(100),
+    message     TEXT         NOT NULL,
+    raw_line    TEXT,
+    ingested_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    ingested_by INT          NULL,
+    FOREIGN KEY (ingested_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE anomaly_scores (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    log_entry_id  INT   NOT NULL,
+    score         FLOAT NOT NULL,
+    severity_label ENUM('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL,
+    computed_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (log_entry_id) REFERENCES log_entries(id) ON DELETE CASCADE
+);
+
+CREATE TABLE alerts (
+    id               INT AUTO_INCREMENT PRIMARY KEY,
+    log_entry_id     INT  NULL,
+    anomaly_score_id INT  NULL,
+    title            VARCHAR(255) NOT NULL,
+    description      TEXT,
+    severity         ENUM('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL,
+    status           ENUM('open','investigating','resolved') DEFAULT 'open',
+    assigned_to      INT  NULL,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (log_entry_id)     REFERENCES log_entries(id)    ON DELETE SET NULL,
+    FOREIGN KEY (anomaly_score_id) REFERENCES anomaly_scores(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_to)      REFERENCES users(id)          ON DELETE SET NULL
+);
+
+CREATE TABLE chat_sessions (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT  NOT NULL,
+    alert_id     INT  NULL,
+    message_role ENUM('user','assistant') NOT NULL,
+    content      TEXT NOT NULL,
+    sent_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
+    FOREIGN KEY (alert_id) REFERENCES alerts(id) ON DELETE SET NULL
+);
+
+CREATE TABLE scan_results (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    performed_by INT NOT NULL,
+    target       VARCHAR(255) NOT NULL,
+    port         INT NOT NULL,
+    protocol     VARCHAR(10),
+    status       ENUM('open','closed','filtered') NOT NULL,
+    scanned_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (performed_by) REFERENCES users(id)
+);
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Verify schema matches your UML diagrams
+    \item[\todo] Import: \texttt{mysql -u helix\_user -p helix\_db < db/schema.sql}
+    \item[\todo] Confirm all 6 tables appear in phpMyAdmin
+\end{itemize}
+
+\textbf{Note on migrations:} Every schema change after the initial import must be a new migration file: \texttt{002\_}, \texttt{003\_}, etc. Never re-edit \filepath{schema.sql} to fix an existing column -- add a migration.
+
+\section{1.2 -- API Route Contract}
+
+Document every route in \filepath{docs/SDD/API\_REFERENCE.md}. For each route define: method, path, required role, request body, success response, error responses.
+
+\textbf{Complete route table:}
+
+\begin{center}
+\begin{tabular}{C{1.5cm} L{3.5cm} L{3.5cm} L{3cm} C{1.5cm}}
+    \toprule
+    \textbf{Method} & \textbf{Path} & \textbf{Controller.Method} & \textbf{Required Role} & \textbf{FR} \\
+    \midrule
+    POST & /auth/register & AuthController.register & public & FR-007 \\
+    POST & /auth/login & AuthController.login & public & FR-001 \\
+    POST & /auth/logout & AuthController.logout & any authenticated & FR-005 \\
+    GET & /auth/me & AuthController.me & any authenticated & FR-003 \\
+    GET & /dashboard/stats & DashboardController.stats & any authenticated & FR-010 \\
+    POST & /logs/upload & LogController.upload & admin, blue, purple & FR-020 \\
+    GET & /logs & LogController.index & any authenticated & FR-022 \\
+    GET & /logs/\{id\} & LogController.show & any authenticated & FR-023 \\
+    GET & /alerts & AlertController.index & any authenticated & FR-030 \\
+    GET & /alerts/\{id\} & AlertController.show & any authenticated & FR-034 \\
+    PUT & /alerts/\{id\}/status & AlertController.updateStatus & admin, blue, purple & FR-033 \\
+    POST & /ml/score & MLController.score & administrator & FR-040 \\
+    GET & /ml/scores & MLController.index & any authenticated & FR-044 \\
+    POST & /ai/chat & AIController.chat & any authenticated & FR-050 \\
+    GET & /ai/history & AIController.history & any authenticated & FR-053 \\
+    POST & /scanner/scan & ScannerController.scan & admin, red, purple & FR-060 \\
+    GET & /scanner/results & ScannerController.results & admin, red, purple & FR-062 \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+    \item[\todo] Add this table to \filepath{docs/SDD/API\_REFERENCE.md}
+    \item[\todo] Add every route to your \filepath{api/index.php} routing table (as empty stubs for now)
+\end{itemize}
+
+\section{1.3 -- UML Diagram Validation}
+
+You already have \texttt{.puml} files. This task is about reviewing them for correctness:
+
+\begin{itemize}
+    \item[\todo] \filepath{use\_case.puml} -- Does it show all 7 actors (A0--A7)? Are \texttt{<<extend>>} / \texttt{<<include>>} used correctly?
+    \item[\todo] \filepath{er\_diagram.puml} -- Does it match \filepath{schema.sql} exactly? Check column names, types, FK arrows
+    \item[\todo] \filepath{class\_services.puml} -- Does it show Controller $\rightarrow$ Service $\rightarrow$ Model relationships?
+    \item[\todo] \filepath{sequence\_auth.puml} -- Does it show: browser $\rightarrow$ index.php $\rightarrow$ AuthMiddleware $\rightarrow$ AuthController $\rightarrow$ AuthService $\rightarrow$ User model $\rightarrow$ MySQL?
+    \item[\todo] \filepath{sequence\_log\_ingest.puml} -- Does it show the pipeline: upload $\rightarrow$ LogService $\rightarrow$ JavaBridge $\rightarrow$ LogParser $\rightarrow$ LogEntry model $\rightarrow$ MLService trigger?
+    \item[\todo] \filepath{sequence\_ai\_chat.puml} -- Does it show: AIController $\rightarrow$ AIService $\rightarrow$ OpenAI API $\rightarrow$ ChatSession model?
+    \item[\todo] \filepath{component.puml} -- Does it show: Browser, Apache (frontend + api), PHP (controllers/services/models), Python ML, Java module, MySQL?
+    \item[\todo] \filepath{activity\_alert.puml} -- Does it show the full alert lifecycle: log ingested $\rightarrow$ scored $\rightarrow$ alert created $\rightarrow$ triaged $\rightarrow$ resolved?
+\end{itemize}
+
+Export all diagrams as PNG into \filepath{docs/UML/png/}.
+
+\section{1.4 -- SRS Traceability Matrix}
+
+\filepath{docs/traceability\_matrix.md}:
+
+\begin{center}
+\begin{tabular}{L{1.8cm} L{3.5cm} L{3cm} L{3.5cm} L{1.8cm} C{1.2cm}}
+    \toprule
+    \textbf{FR ID} & \textbf{Description} & \textbf{Route} & \textbf{Controller.Method} & \textbf{DB Table} & \textbf{Status} \\
+    \midrule
+    FR-001 & Login & POST /auth/login & AuthController.login & users & [\todo] \\
+    FR-002 & Failed login handling & POST /auth/login & AuthController.login & users & [\todo] \\
+    FR-003 & Session persistence & GET /auth/me & AuthController.me & users & [\todo] \\
+    \midrule
+    \multicolumn{6}{c}{\textit{... (map every FR-001 to FR-063)}} \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+    \item[\todo] Map every FR-001 to FR-063 to a route, controller method, and DB table
+    \item[\todo] This matrix is your implementation checklist -- check FRs off as you build
+\end{itemize}
+
+\section{1.5 -- Seed File}
+
+\filepath{database/seed.sql}:
+
+\begin{lstlisting}[language=SQL]
+-- Admin user (password: Admin@1234)
+-- Generate hash: php -r "echo password_hash('Admin@1234', PASSWORD_BCRYPT, ['cost'=>12]);"
+INSERT INTO users (username, email, password_hash, role) VALUES
+('admin', 'admin@helix.local', '$2y$12$GENERATED_HASH_HERE', 'administrator'),
+('blue1', 'blue@helix.local',  '$2y$12$GENERATED_HASH_HERE', 'blue_team'),
+('red1',  'red@helix.local',   '$2y$12$GENERATED_HASH_HERE', 'red_team');
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\todo] Generate real bcrypt hashes and update seed.sql
+    \item[\todo] Import: \texttt{mysql -u helix\_user -p helix\_db < database/seed.sql}
+\end{itemize}
+
+\section*{Deliverables}
+
+\begin{itemize}
+    \item \filepath{db/schema.sql} -- final, importable, 6 tables
+    \item \filepath{docs/SDD/API\_REFERENCE.md} -- complete route contract
+    \item All UML diagrams validated and exported to PNG
+    \item \filepath{docs/traceability\_matrix.md} -- all FRs mapped
+    \item \filepath{database/seed.sql} -- 3 test users
+\end{itemize}
+
+\section*{Validation Criteria}
+
+\begin{itemize}
+    \item[\todo] Schema imports without error
+    \item[\todo] All 6 tables visible in phpMyAdmin
+    \item[\todo] All UML diagrams reviewed and corrected
+    \item[\todo] All FR-001 to FR-063 appear in traceability matrix
+    \item[\todo] All routes registered as stubs in \filepath{api/index.php}
+    \item[\todo] Git commit: \texttt{docs: finalize schema, API contract, UML and traceability matrix}
+\end{itemize}
+
+\section*{Common Mistakes to Avoid}
+
+\begin{warnbox}[title=Watch Out]
+\begin{itemize}
+    \item[$\times$] Editing \filepath{schema.sql} after first import instead of creating a migration
+    \item[$\times$] Skipping the traceability matrix -- you will lose track of which FRs are done
+    \item[$\times$] Routes in \filepath{api/index.php} pointing to non-existent controller methods
+    \item[$\times$] UML diagrams that don't match the actual code structure
+\end{itemize}
+\end{warnbox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 2
+% ══════════════════════════════════════════════════════════════════════════
+\chapter{PHASE 2 -- Authentication Module (FR-001 to FR-007)}
+
+\begin{phasebox}{Phase 2: Authentication \& RBAC}
+\textbf{Why this comes before all other modules:} Every other feature is gated behind authentication. You cannot build role-based features without a working session system. Auth is also your highest-security concern -- if it's broken, everything built on it is insecure.
+\end{phasebox}
+
+\section*{Objective}
+Implement the complete authentication flow: register, login, logout, session validation -- with bcrypt hashing, PHP sessions, and role middleware enforcing access control on every protected route.
+
+\section*{Learning Goals}
+\begin{itemize}
+    \item Understand bcrypt and why password hashing $\neq$ encryption
+    \item Understand PHP session security: \texttt{session\_regenerate\_id()}, cookie flags
+    \item Understand the difference between Authentication (who are you?) and Authorization (what can you do?)
+    \item Understand how middleware chains work in a Front Controller pattern
+\end{itemize}
+
+\section*{Key Theoretical Concepts}
+\begin{itemize}
+    \item \textbf{bcrypt cost factor:} Each increment doubles computation time -- cost 12 is $\sim$300ms, which is too slow to brute-force
+    \item \textbf{Session fixation attack:} Why \texttt{session\_regenerate\_id(true)} is mandatory after login
+    \item \textbf{HttpOnly cookie flag:} Prevents JavaScript from reading the session cookie (XSS protection)
+    \item \textbf{SameSite=Strict:} Prevents the browser from sending the cookie on cross-site requests (CSRF protection)
+    \item \textbf{Generic error messages:} "Invalid credentials" -- never "User not found" or "Wrong password"
+\end{itemize}
+
+\section{2.1 -- Auth Middleware}
+
+\filepath{api/middleware/AuthMiddleware.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Middleware;
+
+use App\Helpers\Response;
+
+class AuthMiddleware
+{
+    public static function handle(): void
+    {
+        self::startSecureSession();
+
+        if (!isset($_SESSION['user_id'])) {
+            Response::unauthorized();
+        }
+    }
+
+    public static function startSecureSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            ini_set('session.cookie_httponly', '1');
+            ini_set('session.cookie_samesite', 'Strict');
+            ini_set('session.gc_maxlifetime', (string)($_ENV['SESSION_LIFETIME'] ?? 3600));
+            session_start();
+        }
+    }
+
+    public static function currentUser(): array
+    {
+        return [
+            'id'   => $_SESSION['user_id']   ?? null,
+            'role' => $_SESSION['user_role'] ?? null,
+        ];
+    }
+}
+\end{lstlisting}
+
+\filepath{api/middleware/RoleMiddleware.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Middleware;
+
+use App\Helpers\Response;
+
+class RoleMiddleware
+{
+    public static function require(array $allowedRoles): void
+    {
+        AuthMiddleware::handle();
+
+        $userRole = $_SESSION['user_role'] ?? '';
+
+        if (!in_array($userRole, $allowedRoles, true)) {
+            Response::forbidden();
+        }
+    }
+}
+\end{lstlisting}
+
+\section{2.2 -- User Model}
+
+\filepath{api/models/User.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Models;
+
+use App\Config\Database;
+use PDO;
+
+class User
+{
+    public static function findByUsername(string $username): ?array
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('SELECT * FROM users WHERE username = ? AND is_active = 1 LIMIT 1');
+        $stmt->execute([$username]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function findById(int $id): ?array
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('SELECT id, username, email, role, created_at, last_login FROM users WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
+    }
+
+    public static function create(string $username, string $email, string $passwordHash, string $role = 'learner'): int
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$username, $email, $passwordHash, $role]);
+        return (int) $db->lastInsertId();
+    }
+
+    public static function updateLastLogin(int $id): void
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('UPDATE users SET last_login = NOW() WHERE id = ?');
+        $stmt->execute([$id]);
+    }
+
+    public static function emailOrUsernameExists(string $username, string $email): bool
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1');
+        $stmt->execute([$username, $email]);
+        return (bool) $stmt->fetch();
+    }
+}
+\end{lstlisting}
+
+\section{2.3 -- Auth Service}
+
+\filepath{api/services/AuthService.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Services;
+
+use App\Models\User;
+use App\Middleware\AuthMiddleware;
+
+class AuthService
+{
+    public function register(array $data): array
+    {
+        if (User::emailOrUsernameExists($data['username'], $data['email'])) {
+            return ['error' => 'Username or email already exists', 'code' => 409];
+        }
+
+        $hash = password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]);
+        $id   = User::create($data['username'], $data['email'], $hash);
+
+        return ['user_id' => $id];
+    }
+
+    public function login(string $username, string $password): array
+    {
+        $user = User::findByUsername($username);
+
+        if (!$user || !password_verify($password, $user['password_hash'])) {
+            return ['error' => 'Invalid credentials', 'code' => 401];
+        }
+
+        AuthMiddleware::startSecureSession();
+        session_regenerate_id(true);
+
+        $_SESSION['user_id']   = $user['id'];
+        $_SESSION['user_role'] = $user['role'];
+
+        User::updateLastLogin($user['id']);
+
+        return [
+            'user' => [
+                'id'       => $user['id'],
+                'username' => $user['username'],
+                'role'     => $user['role'],
+            ]
+        ];
+    }
+
+    public function logout(): void
+    {
+        AuthMiddleware::startSecureSession();
+        $_SESSION = [];
+        session_destroy();
+    }
+
+    public function currentUser(): ?array
+    {
+        $id = $_SESSION['user_id'] ?? null;
+        return $id ? User::findById((int)$id) : null;
+    }
+}
+\end{lstlisting}
+
+\section{2.4 -- Auth Controller}
+
+\filepath{api/controllers/AuthController.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Controllers;
+
+use App\Services\AuthService;
+use App\Middleware\AuthMiddleware;
+use App\Helpers\Response;
+use App\Helpers\Validator;
+
+class AuthController
+{
+    private AuthService $service;
+
+    public function __construct()
+    {
+        $this->service = new AuthService();
+    }
+
+    public function register(): void
+    {
+        $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        $v = (new Validator())
+            ->required('username', $body['username'] ?? '')
+            ->required('email', $body['email'] ?? '')
+            ->required('password', $body['password'] ?? '')
+            ->email('email', $body['email'] ?? '')
+            ->minLength('password', $body['password'] ?? '', 8);
+
+        if (!$v->passes()) {
+            Response::error(json_encode($v->errors()), 422);
+        }
+
+        $result = $this->service->register($body);
+
+        if (isset($result['error'])) {
+            Response::error($result['error'], $result['code']);
+        }
+
+        Response::success($result, 'Account created', 201);
+    }
+
+    public function login(): void
+    {
+        $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        $result = $this->service->login(
+            $body['username'] ?? '',
+            $body['password'] ?? ''
+        );
+
+        if (isset($result['error'])) {
+            Response::error($result['error'], $result['code']);
+        }
+
+        Response::success($result['user'], 'Login successful');
+    }
+
+    public function logout(): void
+    {
+        AuthMiddleware::handle();
+        $this->service->logout();
+        Response::success(null, 'Logged out');
+    }
+
+    public function me(): void
+    {
+        AuthMiddleware::handle();
+        $user = $this->service->currentUser();
+
+        if (!$user) {
+            Response::unauthorized();
+        }
+
+        Response::success($user);
+    }
+}
+\end{lstlisting}
+
+\section{2.5 -- Register Auth Routes}
+
+In \filepath{api/index.php}, add to the routes array:
+
+\begin{lstlisting}[language=PHP]
+use App\Controllers\AuthController;
+
+$routes['POST']['/auth/register'] = [AuthController::class, 'register'];
+$routes['POST']['/auth/login']    = [AuthController::class, 'login'];
+$routes['POST']['/auth/logout']   = [AuthController::class, 'logout'];
+$routes['GET']['/auth/me']        = [AuthController::class, 'me'];
+\end{lstlisting}
+
+\section{2.6 -- Frontend: Login Page}
+
+\filepath{frontend/login.html} -- already exists in your tree. Build it now:
+\begin{itemize}
+    \item HTML form: username + password fields
+    \item No page refresh -- use JavaScript \texttt{fetch()}
+\end{itemize}
+
+\filepath{frontend/js/auth.js}:
+
+\begin{lstlisting}[language=JavaScript]
+async function login(username, password) {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username, password }),
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    sessionStorage.setItem("userRole", data.data.role);
+    window.location.href = "/dashboard.html";
+  } else {
+    showError(data.error);
+  }
+}
+\end{lstlisting}
+
+\filepath{frontend/js/api.js} -- the shared API client module:
+
+\begin{lstlisting}[language=JavaScript]
+const API_BASE = "/api";
+
+async function apiFetch(path, options = {}) {
+  const defaults = {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  };
+
+  const res = await fetch(`${API_BASE}${path}`, { ...defaults, ...options });
+
+  if (res.status === 401) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  return await res.json();
+}
+
+const api = {
+  get: (path) => apiFetch(path),
+  post: (path, body) =>
+    apiFetch(path, { method: "POST", body: JSON.stringify(body) }),
+  put: (path, body) =>
+    apiFetch(path, { method: "PUT", body: JSON.stringify(body) }),
+  delete: (path) => apiFetch(path, { method: "DELETE" }),
+};
+\end{lstlisting}
+
+\textbf{Why \texttt{credentials: 'include'}:} Without this, the browser won't send the session cookie with cross-path requests. This is the most common cause of "keeps logging me out" bugs.
+
+\section{2.7 -- Auth Tests}
+
+\filepath{tests/php/AuthServiceTest.php} (PHPUnit):
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace Tests;
+
+use PHPUnit\Framework\TestCase;
+use App\Services\AuthService;
+
+class AuthServiceTest extends TestCase
+{
+    public function test_register_returns_user_id(): void
+    {
+        $this->markTestIncomplete('Requires test DB setup');
+    }
+
+    public function test_login_returns_error_on_wrong_password(): void
+    {
+        $service = new AuthService();
+        $result  = $this->invokeMethod($service, 'validateCredentials', ['nonexistent', 'wrongpass']);
+        $this->assertArrayHasKey('error', $result);
+    }
+
+    private function invokeMethod(object $obj, string $method, array $args = []): mixed
+    {
+        $ref = new \ReflectionMethod($obj, $method);
+        $ref->setAccessible(true);
+        return $ref->invokeArgs($obj, $args);
+    }
+}
+\end{lstlisting}
+
+\section{2.8 -- Manual Test Checklist}
+
+\filepath{tests/manual/auth\_tests.md}:
+
+\begin{itemize}
+    \item[\todo] POST \texttt{/api/auth/register} valid data $\rightarrow$ 201, user\_id returned
+    \item[\todo] POST \texttt{/api/auth/register} duplicate username $\rightarrow$ 409
+    \item[\todo] POST \texttt{/api/auth/register} invalid email $\rightarrow$ 422
+    \item[\todo] POST \texttt{/api/auth/login} valid credentials $\rightarrow$ 200, role returned, cookie set
+    \item[\todo] POST \texttt{/api/auth/login} wrong password $\rightarrow$ 401, "Invalid credentials"
+    \item[\todo] GET \texttt{/api/auth/me} with cookie $\rightarrow$ 200, user data
+    \item[\todo] GET \texttt{/api/auth/me} without cookie $\rightarrow$ 401
+    \item[\todo] POST \texttt{/api/auth/logout} $\rightarrow$ 200, cookie destroyed
+    \item[\todo] GET \texttt{/api/auth/me} after logout $\rightarrow$ 401
+    \item[\todo] Test route requiring admin role as learner $\rightarrow$ 403
+\end{itemize}
+
+Test all using Postman or Insomnia -- configure "Send cookies" option.
+
+\section*{Deliverables}
+
+\begin{itemize}
+    \item \filepath{api/middleware/AuthMiddleware.php}, \filepath{RoleMiddleware.php}
+    \item \filepath{api/models/User.php}
+    \item \filepath{api/services/AuthService.php}
+    \item \filepath{api/controllers/AuthController.php}
+    \item \filepath{frontend/login.html} functional form
+    \item \filepath{frontend/js/auth.js}, \filepath{frontend/js/api.js}
+    \item Auth routes registered in \filepath{api/index.php}
+    \item \filepath{tests/manual/auth\_tests.md} all checks passing
+\end{itemize}
+
+\section*{Validation Criteria}
+
+\begin{itemize}
+    \item[\todo] FR-001 to FR-007 checked in traceability matrix
+    \item[\todo] Passwords stored as bcrypt (verify in phpMyAdmin -- hash starts with \texttt{\$2y\$})
+    \item[\todo] Wrong password returns same error message as non-existent user
+    \item[\todo] \texttt{session\_regenerate\_id(true)} called on every login
+    \item[\todo] Frontend redirects to login on 401 (handled in \filepath{api.js})
+    \item[\todo] Git commit: \texttt{feat(auth): implement authentication, RBAC middleware, login frontend}
+\end{itemize}
+
+\section*{Common Mistakes to Avoid}
+
+\begin{warnbox}[title=Watch Out]
+\begin{itemize}
+    \item[$\times$] Checking roles only in the frontend JavaScript -- always enforce in \texttt{RoleMiddleware}
+    \item[$\times$] Returning "User not found" vs "Wrong password" separately -- merge into one message
+    \item[$\times$] Forgetting \texttt{credentials: 'include'} in every \texttt{fetch()} call
+    \item[$\times$] Using \texttt{md5()} or \texttt{sha1()} for passwords
+    \item[$\times$] Not calling \texttt{session\_regenerate\_id()} -- session fixation vulnerability
+\end{itemize}
+\end{warnbox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 3
+% ══════════════════════════════════════════════════════════════════════════
+\chapter{PHASE 3 -- Dashboard Module (FR-010 to FR-014)}
+
+\begin{phasebox}{Phase 3: Dashboard \& Routing}
+\textbf{Why now:} The dashboard is the shell of the application -- the first page after login. Building it now, even with placeholder data, establishes the UI framework, client-side router, and nav structure that all subsequent modules will plug into.
+\end{phasebox}
+
+\section*{Objective}
+Build the dashboard frontend shell (with routing), implement the stats API endpoint, and render security metrics with Chart.js. Use placeholder/zero data for sections not yet implemented.
+
+\section*{Learning Goals}
+\begin{itemize}
+    \item Understand client-side routing without a framework (\filepath{router.js})
+    \item Understand the HTML5 History API (\texttt{pushState}, \texttt{popstate})
+    \item Understand Chart.js configuration and data binding
+    \item Understand role-based UI rendering in JavaScript
+\end{itemize}
+
+\section*{Key Theoretical Concepts}
+\begin{itemize}
+    \item \textbf{SPA routing:} The browser loads one HTML page; JavaScript swaps content based on URL without full page reload
+    \item \textbf{\texttt{history.pushState()}:} Changes the URL without navigating -- the foundation of client-side routing
+    \item \textbf{Dashboard as aggregation endpoint:} The dashboard API doesn't own data; it queries multiple tables and returns a summary
+    \item \textbf{Graceful empty states:} Your dashboard must not crash when the DB is empty (it will be during early development)
+\end{itemize}
+
+\section{3.1 -- Client-Side Router}
+
+\filepath{frontend/js/router.js}:
+
+\begin{lstlisting}[language=JavaScript]
+const routes = {
+  "/dashboard": () => import("./dashboard.js").then((m) => m.render()),
+  "/logs": () => import("./logs.js").then((m) => m.render()),
+  "/alerts": () => import("./alerts.js").then((m) => m.render()),
+  "/ai": () => import("./chat.js").then((m) => m.render()),
+  "/scanner": () => import("./scanner.js").then((m) => m.render()),
+};
+
+async function navigate(path) {
+  const handler = routes[path];
+
+  if (!handler) {
+    document.getElementById("app").innerHTML = "<h2>404 - Page not found</h2>";
+    return;
+  }
+
+  history.pushState({}, "", path);
+  document.getElementById("app").innerHTML =
+    '<div class="loading">Loading...</div>';
+  await handler();
+}
+
+window.addEventListener("popstate", () => navigate(location.pathname));
+
+document.addEventListener("click", (e) => {
+  const link = e.target.closest("[data-route]");
+  if (link) {
+    e.preventDefault();
+    navigate(link.dataset.route);
+  }
+});
+
+export { navigate };
+\end{lstlisting}
+
+\section{3.2 -- Dashboard Shell}
+
+\filepath{frontend/dashboard.html}:
+
+\begin{lstlisting}[language=HTML]
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HELIX - Dashboard</title>
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+  </head>
+  <body>
+    <div id="layout">
+      <nav id="sidebar"></nav>
+      <main id="app"></main>
+    </div>
+    <script type="module" src="/js/ui.js"></script>
+    <script type="module" src="/js/router.js"></script>
+  </body>
+</html>
+\end{lstlisting}
+
+\filepath{frontend/js/ui.js} -- builds the sidebar based on user role:
+
+\begin{lstlisting}[language=JavaScript]
+import { navigate } from "./router.js";
+
+const roleNavMap = {
+  administrator: ["/dashboard", "/logs", "/alerts", "/ai", "/scanner"],
+  blue_team: ["/dashboard", "/logs", "/alerts", "/ai"],
+  red_team: ["/dashboard", "/scanner", "/ai"],
+  purple_team: ["/dashboard", "/logs", "/alerts", "/ai", "/scanner"],
+  learner: ["/dashboard", "/ai"],
+};
+
+async function initUI() {
+  const res = await fetch("/api/auth/me", { credentials: "include" });
+  if (!res.ok) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  const { data: user } = await res.json();
+  const allowedPaths = roleNavMap[user.role] ?? [];
+
+  buildSidebar(allowedPaths, user);
+  navigate("/dashboard");
+}
+
+function buildSidebar(paths, user) {
+  const labels = {
+    "/dashboard": "Dashboard",
+    "/logs": "Logs",
+    "/alerts": "Alerts",
+    "/ai": "AI Assistant",
+    "/scanner": "Scanner",
+  };
+  const nav = document.getElementById("sidebar");
+  nav.innerHTML =
+    paths
+      .map((p) => `<a data-route="${p}" href="${p}">${labels[p]}</a>`)
+      .join("") + `<button id="logout-btn">Logout (${user.username})</button>`;
+
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    window.location.href = "/login.html";
+  });
+}
+
+initUI();
+\end{lstlisting}
+
+\section{3.3 -- Dashboard Stats Endpoint}
+
+\filepath{api/controllers/DashboardController.php}:
+
+\begin{lstlisting}[language=PHP]
+<?php
+namespace App\Controllers;
+
+use App\Config\Database;
+use App\Middleware\AuthMiddleware;
+use App\Helpers\Response;
+
+class DashboardController
+{
+    public function stats(): void
+    {
+        AuthMiddleware::handle();
+        $db = Database::getInstance();
+
+        $alertsBySeverity = $db->query(
+            "SELECT severity, COUNT(*) as count FROM alerts GROUP BY severity"
+        )->fetchAll();
+
+        $logCount = $db->query("SELECT COUNT(*) as count FROM log_entries")->fetch()['count'];
+
+        $avgScore = $db->query("SELECT ROUND(AVG(score), 4) as avg FROM anomaly_scores")->fetch()['avg'] ?? 0;
+
+        $trend = $db->query(
+            "SELECT DATE(created_at) as date, COUNT(*) as count
+             FROM alerts
+             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+             GROUP BY DATE(created_at)
+             ORDER BY date ASC"
+        )->fetchAll();
+
+        $openAlerts = $db->query(
+            "SELECT COUNT(*) as count FROM alerts WHERE status = 'open'"
+        )->fetch()['count'];
+
+        Response::success([
+            'alerts_by_severity' => $alertsBySeverity,
+            'log_count'          => (int) $logCount,
+            'avg_anomaly_score'  => (float) $avgScore,
+            'alert_trend'        => $trend,
+            'open_alerts'        => (int) $openAlerts,
+        ]);
+    }
+}
+\end{lstlisting}
+
+Register route in \filepath{api/index.php}:
+
+\begin{lstlisting}[language=PHP]
+$routes['GET']['/dashboard/stats'] = [DashboardController::class, 'stats'];
+\end{lstlisting}
+
+\section{3.4 -- Dashboard Frontend Module}
+
+\filepath{frontend/js/dashboard.js}:
+
+\begin{lstlisting}[language=JavaScript]
+import { api } from "./api.js";
+
+export async function render() {
+  const { data } = await api.get("/dashboard/stats");
+
+  document.getElementById("app").innerHTML = `
+    <div class="dashboard-grid">
+      <div class="metric-card">
+        <span class="metric-label">Open Alerts</span>
+        <span class="metric-value">${data.open_alerts}</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Total Logs</span>
+        <span class="metric-value">${data.log_count}</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-label">Avg Anomaly Score</span>
+        <span class="metric-value">${data.avg_anomaly_score}</span>
+      </div>
+      <canvas id="severity-chart"></canvas>
+      <canvas id="trend-chart"></canvas>
+    </div>
+  `;
+
+  renderSeverityChart(data.alerts_by_severity);
+  renderTrendChart(data.alert_trend);
+}
+
+function renderSeverityChart(alerts) {
+  // Chart.js doughnut chart
+  const ctx = document.getElementById("severity-chart").getContext("2d");
+  new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: alerts.map((a) => a.severity),
+      datasets: [{
+        data: alerts.map((a) => a.count),
+        backgroundColor: ["#dc2626", "#f59e0b", "#3b82f6", "#6b7280"],
+      }],
+    },
+    options: { plugins: { title: { display: true, text: "Alerts by Severity" } } },
+  });
+}
+
+function renderTrendChart(trend) {
+  const ctx = document.getElementById("trend-chart").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: trend.map((t) => t.date),
+      datasets: [{
+        label: "Alerts per day",
+        data: trend.map((t) => t.count),
+        borderColor: "#3C3489",
+        tension: 0.3,
+      }],
+    },
+    options: { plugins: { title: { display: true, text: "7-Day Alert Trend" } } },
+  });
+}
+\end{lstlisting}
+
+\section*{Deliverables}
+
+\begin{itemize}
+    \item \filepath{frontend/js/router.js}, \filepath{frontend/js/ui.js}
+    \item \filepath{frontend/dashboard.html} with sidebar and \texttt{\#app} container
+    \item \filepath{frontend/js/dashboard.js} with Chart.js rendering
+    \item \filepath{api/controllers/DashboardController.php}
+    \item Dashboard route registered in \filepath{api/index.php}
+    \item Chart.js included via CDN in \filepath{dashboard.html}
+\end{itemize}
+
+\section*{Validation Criteria}
+
+\begin{itemize}
+    \item[\todo] FR-010 to FR-014 checked in traceability matrix
+    \item[\todo] Sidebar shows only role-appropriate links
+    \item[\todo] Dashboard renders with zero data (no crashes)
+    \item[\todo] Chart.js charts render with empty/zero datasets
+    \item[\todo] Client-side routing works (back/forward buttons)
+    \item[\todo] Git commit: \texttt{feat(dashboard): implement dashboard shell, stats API, Chart.js}
+\end{itemize}
+
+\section*{Common Mistakes to Avoid}
+
+\begin{warnbox}[title=Watch Out]
+\begin{itemize}
+    \item[$\times$] Hardcoding role-based nav in HTML -- use \filepath{ui.js} to build dynamically
+    \item[$\times$] Dashboard crashing on empty DB -- always use \texttt{?? 0} or \texttt{|| []}
+    \item[$\times$] Forgetting \texttt{history.pushState()} -- browser back button breaks
+    \item[$\times$] Mixing frontend and backend routing -- keep them separate
+\end{itemize}
+\end{warnbox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% PHASE 4-10 PLACEHOLDER
+% ══════════════════════════════════════════════════════════════════════════
+\chapter{PHASE 4 through PHASE 10 -- Implementation Phases}
+
+\begin{infobox}[title=Roadmap Continuation]
+Phases 4 through 10 follow the same structural pattern as Phases 0--3:
+\begin{itemize}
+    \item \textbf{Phase 4:} Log Ingestion Module (FR-020 to FR-023)
+    \item \textbf{Phase 5:} Alert Module (FR-030 to FR-034)
+    \item \textbf{Phase 6:} ML Detection Module (FR-040 to FR-044)
+    \item \textbf{Phase 7:} AI Assistant Module (FR-050 to FR-053)
+    \item \textbf{Phase 8:} Scanner Module (FR-060 to FR-062)
+    \item \textbf{Phase 9:} Integration \& Testing
+    \item \textbf{Phase 10:} Docker \& Deployment
+\end{itemize}
+Each phase includes: Objective, Learning Goals, Key Theoretical Concepts, Practical Tasks with code, Deliverables, Validation Criteria, and Common Mistakes to Avoid.
+\end{infobox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% CONCLUSION
+% ══════════════════════════════════════════════════════════════════════════
+\chapter*{Conclusion}
+\addcontentsline{toc}{chapter}{Conclusion}
+
+\begin{infobox}[title=Summary]
+This roadmap provides a phased, dependency-ordered execution plan for building the HELIX PoC. Each phase is self-contained with clear deliverables, validation criteria, and common pitfalls to avoid. Follow the strict dependency chain -- do not skip ahead. Build one module at a time, test it thoroughly, then proceed.
+\end{infobox}
+
+\end{document}

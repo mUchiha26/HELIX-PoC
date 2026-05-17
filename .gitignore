@@ -1,5 +1,22 @@
+# Ignore the sessions summary file
+SESSIONS_SUMMARY.md
+# Python
 .venv/
-.env
 __pycache__/
 *.pyc
-SESSIONS_SUMMARY.md
+
+# Java
+java - module / build /*. class
+
+# Environment
+*.env
+
+# IDE
+.vscode/
+.idea/
+
+#Documentation
+*.aux
+*.log
+*.out
+*.toc

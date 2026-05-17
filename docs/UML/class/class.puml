@@ -1,6 +1,6 @@
 @startuml class
 title HELIX Platform – Class Diagram (Aligned with db/schema.sql)
-left to right direction
+'left to right direction
 skinparam classAttributeIconSize 8
 skinparam shadowing false
 skinparam roundcorner 8

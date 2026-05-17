@@ -1,0 +1,107 @@
+.
+├── api
+│   ├── config
+│   │   ├── Cors.php
+│   │   ├── Database.php
+│   │   └── Environment.php
+│   ├── controllers
+│   │   ├── AIController.php
+│   │   ├── AlertController.php
+│   │   ├── AuthController.php
+│   │   ├── DashboardController.php
+│   │   ├── LogController.php
+│   │   ├── MLController.php
+│   │   └── ScannerController.php
+│   ├── helpers
+│   │   ├── Response.php
+│   │   └── Validator.php
+│   ├── index.php
+│   ├── middleware
+│   │   ├── AuthMiddleware.php
+│   │   └── RoleMiddleware.php
+│   ├── models
+│   │   ├── Alert.php
+│   │   ├── ChatSession.php
+│   │   ├── LogEntry.php
+│   │   ├── ScanResult.php
+│   │   └── User.php
+│   └── services
+│       ├── AIService.php
+│       ├── AlertService.php
+│       ├── AuthService.php
+│       ├── JavaBridge.php
+│       ├── LogService.php
+│       ├── MLService.php
+│       └── ScannerService.php
+├── composer.json
+├── database
+│   ├── migrations
+│   │   └── 001_add_anomaly_score.sql
+│   ├── schema.sql
+│   └── seed.sql
+├── docs
+│   ├── ARCHITECTURE.md
+│   ├── ROADMAP.md
+│   ├── SDD
+│   │   ├── API_REFERENCE.md
+│   │   ├── HELIX_SDD.md
+│   │   └── SECURITY_DESIGN.md
+│   └── UML
+│       ├── activity_alert.drawio
+│       ├── class_services.drawio
+│       ├── component.drawio
+│       ├── er_diagram.drawio
+│       ├── png
+│       ├── sequence_ai_chat.drawio
+│       ├── sequence_auth.drawio
+│       ├── sequence_log_ingest.drawio
+│       └── use_case.drawio
+├── frontend
+│   ├── assets
+│   │   ├── favicon.ico
+│   │   └── logo.svg
+│   ├── css
+│   │   ├── components.css
+│   │   ├── dashboard.css
+│   │   └── main.css
+│   ├── dashboard.html
+│   ├── index.html
+│   ├── js
+│   │   ├── alerts.js
+│   │   ├── api.js
+│   │   ├── auth.js
+│   │   ├── chat.js
+│   │   ├── dashboard.js
+│   │   ├── logs.js
+│   │   ├── router.js
+│   │   ├── scanner.js
+│   │   └── ui.js
+│   └── login.html
+├── java-module
+│   ├── build
+│   ├── compile.sh
+│   ├── README.md
+│   └── src
+│       ├── HashScanner.java
+│       ├── LogFormat.java
+│       ├── LogParser.java
+│       └── ParseResult.java
+├── python-module
+│   ├── anomaly_detector.py
+│   ├── config.py
+│   ├── db_connector.py
+│   ├── feature_engineering.py
+│   ├── README.md
+│   ├── requirements.txt
+│   └── test_detector.py
+├── README.md
+├── tests
+│   ├── php
+│   │   ├── AuthServiceTest.php
+│   │   ├── LogServiceTest.php
+│   │   └── ValidatorTest.php
+│   └── python
+├── tree.txt
+└── vendor
+
+26 directories, 79 files

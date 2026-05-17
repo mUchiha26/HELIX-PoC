@@ -279,23 +279,23 @@ const API_BASE = "/api"; // relative — works on same origin
 
 Never hardcode `http://localhost/...` — relative paths survive domain changes.
 
-- [ ] Install Apache, PHP, and dependencies: `sudo dnf install httpd php php-cli php-pdo php-pdo_mysql php-json`
-- [ ] Create `/etc/httpd/conf.d/helix.conf` with vhost above
-- [ ] Add `127.0.0.1 helix.local` to `/etc/hosts`: `echo "127.0.0.1    helix.local" | sudo tee -a /etc/hosts`
-- [ ] Fix permissions: `chmod 755 /home/yasseene/HELIX{,/frontend,/api}`
-- [ ] Verify mod_rewrite: `grep -i "rewrite" /etc/httpd/conf.modules.d/*.conf`
-- [ ] Run `sudo httpd -t` (syntax check)
-- [ ] Run `sudo systemctl restart httpd`
-- [ ] Verify: `http://helix.local` serves `frontend/index.html`
-- [ ] Create `api/index.php` with `echo "API OK";` temporarily
-- [ ] Verify: `http://helix.local/api` returns "API OK"
-- [ ] Check logs: `tail -f /var/log/httpd/helix_error.log` if anything fails
+- [x] Install Apache, PHP, and dependencies: `sudo dnf install httpd php php-cli php-pdo php-pdo_mysql php-json`
+- [x] Create `/etc/httpd/conf.d/helix.conf` with vhost above
+- [x] Add `127.0.0.1 helix.local` to `/etc/hosts`: `echo "127.0.0.1    helix.local" | sudo tee -a /etc/hosts`
+- [x] Fix permissions: `chmod 755 /home/yasseene/HELIX{,/frontend,/api}`
+- [x] Verify mod_rewrite: `grep -i "rewrite" /etc/httpd/conf.modules.d/*.conf`
+- [x] Run `sudo httpd -t` (syntax check)
+- [x] Run `sudo systemctl restart httpd`
+- [x] Verify: `http://helix.local` serves `frontend/index.html`
+- [x] Create `api/index.php` with `echo "API OK";` temporarily
+- [x] Verify: `http://helix.local/api` returns "API OK"
+- [x] Check logs: `tail -f /var/log/httpd/helix_error.log` if anything fails
 
 #### 0.3 — MySQL Setup
 
-- [ ] Start MySQL in XAMPP
-- [ ] Create database: `helix_db`
-- [ ] Create dedicated user with limited privileges:
+- [x] Start MySQL in XAMPP
+- [x] Create database: `helix_db`
+- [x] Create dedicated user with limited privileges:
 
 ```sql
 CREATE USER 'helix_user'@'localhost' IDENTIFIED BY 'your_password';
@@ -620,7 +620,7 @@ cd python-module
 python -m venv .venv
 ```
 
-- [ ] Delete `requirements.txt`, create `pyproject.toml`:
+- [ ] create `pyproject.toml`:
 
 ```toml
 [project]
@@ -651,8 +651,8 @@ build-backend = "setuptools.backends.legacy:BuildBackend"
 
 #### 0.11 — Java Environment
 
-- [ ] Confirm JDK ≥ 17: `java -version`, `javac -version`
-- [ ] Review `java-module/compile.sh` — understand what it does:
+- [x] Confirm JDK ≥ 17: `java -version`, `javac -version`
+- [] Review `java-module/compile.sh` — understand what it does:
 
 ```bash
 #!/bin/bash
@@ -697,7 +697,7 @@ echo "Compilation complete"
 
 ## PHASE 1 — Architecture Design, Database Schema & UML
 
-> **Why this comes before coding:** You already have `.drawio` diagram files. This phase is about validating them, locking the database schema, and mapping every SRS requirement to a concrete implementation path. Changing the schema after writing 5 models is expensive.
+> **Why this comes before coding:** You already have `.puml` diagram files. This phase is about validating them, locking the database schema, and mapping every SRS requirement to a concrete implementation path. Changing the schema after writing 5 models is expensive.
 
 ### Objective
 
@@ -801,7 +801,7 @@ CREATE TABLE scan_results (
 );
 ```
 
-- [ ] Verify schema matches your `er_diagram.drawio`
+- [ ] Verify schema matches your `er_diagram.puml`
 - [ ] Import: `mysql -u helix_user -p helix_db < database/schema.sql`
 - [ ] Confirm all 6 tables appear in phpMyAdmin
 
@@ -838,16 +838,16 @@ Document every route in `docs/SDD/API_REFERENCE.md`. For each route define: meth
 
 #### 1.3 — UML Diagram Validation
 
-You already have `.drawio` files. This task is about reviewing them for correctness:
+You already have `.puml` files. This task is about reviewing them for correctness:
 
-- [ ] `use_case.drawio` — Does it show all 7 actors (A0–A7)? Are `<<extend>>` / `<<include>>` used correctly?
-- [ ] `er_diagram.drawio` — Does it match `schema.sql` exactly? Check column names, types, FK arrows
-- [ ] `class_services.drawio` — Does it show Controller → Service → Model relationships?
-- [ ] `sequence_auth.drawio` — Does it show: browser → index.php → AuthMiddleware → AuthController → AuthService → User model → MySQL?
-- [ ] `sequence_log_ingest.drawio` — Does it show the pipeline: upload → LogService → JavaBridge → LogParser → LogEntry model → MLService trigger?
-- [ ] `sequence_ai_chat.drawio` — Does it show: AIController → AIService → OpenAI API → ChatSession model?
-- [ ] `component.drawio` — Does it show: Browser, Apache (frontend + api), PHP (controllers/services/models), Python ML, Java module, MySQL?
-- [ ] `activity_alert.drawio` — Does it show the full alert lifecycle: log ingested → scored → alert created → triaged → resolved?
+- [ ] `use_case.puml` — Does it show all 7 actors (A0–A7)? Are `<<extend>>` / `<<include>>` used correctly?
+- [ ] `er_diagram.puml` — Does it match `schema.sql` exactly? Check column names, types, FK arrows
+- [ ] `class_services.puml` — Does it show Controller → Service → Model relationships?
+- [ ] `sequence_auth.puml` — Does it show: browser → index.php → AuthMiddleware → AuthController → AuthService → User model → MySQL?
+- [ ] `sequence_log_ingest.puml` — Does it show the pipeline: upload → LogService → JavaBridge → LogParser → LogEntry model → MLService trigger?
+- [ ] `sequence_ai_chat.puml` — Does it show: AIController → AIService → OpenAI API → ChatSession model?
+- [ ] `component.puml` — Does it show: Browser, Apache (frontend + api), PHP (controllers/services/models), Python ML, Java module, MySQL?
+- [ ] `activity_alert.puml` — Does it show the full alert lifecycle: log ingested → scored → alert created → triaged → resolved?
 
 Export all diagrams as PNG into `docs/UML/png/`.
 
@@ -3666,7 +3666,7 @@ Module          Testing &        & Deploy
 | VS Code            | PHP Intelephense + Pylance + Extension Pack for Java   |
 | Postman / Insomnia | API testing — configure cookie jar for session testing |
 | phpMyAdmin         | MySQL inspection (XAMPP bundled)                       |
-| draw.io            | UML diagrams (your `.drawio` files)                    |
+| draw.io            | UML diagrams (your `.puml` files)                      |
 | Git + GitHub       | Version control                                        |
 
 ### Testing
