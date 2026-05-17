@@ -1,0 +1,71 @@
+@startuml state_scan_task
+title HELIX Platform – ScanTask State Machine
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #3C3489
+    FontColor #3C3489
+    FontSize 12
+    AttributeFontColor #5A50B0
+    AttributeFontSize 10
+}
+skinparam ArrowColor #5A50B0
+skinparam NoteBackgroundColor #F8F7F4
+skinparam NoteBorderColor #CCCAC0
+skinparam NoteFontColor #3A3A38
+
+[*] --> PENDING : Red Team Operator\nsubmits scan request (UC-17)
+
+state PENDING {
+    note right: Scan queued awaiting execution\nValidations passed:\n- Role authorization\n- Target in scope\n- Legal consent accepted
+}
+
+PENDING --> RUNNING : Tool executor\nstarts scan process
+
+state RUNNING {
+    note right: Server-side tool execution\n(nmap / whois / osint)\nProgress streamed to frontend\nvia WebSocket
+}
+
+RUNNING --> COMPLETED : Tool finishes\nsuccessfully
+
+state COMPLETED {
+    note right: Raw output parsed\nScanResults persisted\nResults available for review\nand export
+}
+
+COMPLETED --> [*] : Final state
+
+RUNNING --> FAILED : Tool timeout\nor execution error
+
+state FAILED {
+    note right: Error logged\nPartial results stored (if any)\nOperator notified with\nfailure reason
+}
+
+FAILED --> PENDING : Operator retries\nwith adjusted parameters
+
+note bottom of PENDING
+    Entry: Set status='pending',
+    validate user role, target scope,
+    and legal consent
+end note
+
+note bottom of RUNNING
+    Entry: Set started_at=NOW(),
+    exec(tool_command),
+    begin progress streaming
+end note
+
+note bottom of COMPLETED
+    Entry: Set completed_at=NOW(),
+    parse XML/JSON output,
+    INSERT scan_results records
+end note
+
+note bottom of FAILED
+    Entry: Set error message,
+    store partial results,
+    log failure to audit trail
+end note
+
+@enduml

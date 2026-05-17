@@ -1,0 +1,73 @@
+@startuml state_session
+title HELIX Platform – Session State Machine
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #3C3489
+    FontColor #3C3489
+    FontSize 12
+    AttributeFontColor #5A50B0
+    AttributeFontSize 10
+}
+skinparam ArrowColor #5A50B0
+skinparam NoteBackgroundColor #F8F7F4
+skinparam NoteBorderColor #CCCAC0
+skinparam NoteFontColor #3A3A38
+
+[*] --> CREATED : Successful login\n(UC-02)
+
+state CREATED {
+    note right: Session record inserted\nsession_id generated\nexpires_at set (e.g., 24h)\nToken bound to user_id + role
+}
+
+CREATED --> ACTIVE : First request with\nvalid session cookie
+
+state ACTIVE {
+    note right: User navigating platform\nEach request validates session\nlast_active timestamp updated\nAccess granted to role resources
+}
+
+ACTIVE --> ACTIVE : Request received\nwithin valid timeframe\n(last_active refreshed)
+
+ACTIVE --> EXPIRED : expires_at reached\nor inactivity timeout
+
+state EXPIRED {
+    note right: Session no longer valid\nUser redirected to login\nSession record retained\nfor audit purposes
+}
+
+EXPIRED --> [*] : Final state
+
+ACTIVE --> INVALIDATED : Admin deactivates user\nor manual logout (UC-03)
+
+state INVALIDATED {
+    note right: Session terminated\nimmediately\nToken revoked\nAudit log entry created
+}
+
+INVALIDATED --> [*] : Final state
+
+note bottom of CREATED
+    Entry: Generate session_id (UUID),
+    set token, expires_at=NOW()+interval,
+    INSERT into sessions table
+end note
+
+note bottom of ACTIVE
+    Entry: Validate session_id exists,
+    expires_at > NOW(),
+    update last_active=NOW()
+end note
+
+note bottom of EXPIRED
+    Entry: expires_at <= NOW() or
+    last_active > inactivity_threshold,
+    session data cleared from cache
+end note
+
+note bottom of INVALIDATED
+    Entry: Admin action or explicit logout,
+    DELETE or flag session as invalid,
+    log to audit trail
+end note
+
+@enduml

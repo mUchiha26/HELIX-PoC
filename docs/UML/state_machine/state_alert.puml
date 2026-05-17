@@ -1,0 +1,68 @@
+@startuml state_alert
+title HELIX Platform – Alert State Machine
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #3C3489
+    FontColor #3C3489
+    FontSize 12
+    AttributeFontColor #5A50B0
+    AttributeFontSize 10
+}
+skinparam ArrowColor #5A50B0
+skinparam NoteBackgroundColor #F8F7F4
+skinparam NoteBorderColor #CCCAC0
+skinparam NoteFontColor #3A3A38
+
+[*] --> NEW : Detection pipeline\ngenerates alert
+
+state NEW {
+    note right: Alert created by UC-15\n(Genrate Alerts)\nSeverity: HIGH or CRITICAL\nStatus: unacknowledged
+}
+
+NEW --> OPEN : Blue Team Operator\nacknowledges alert
+
+state OPEN {
+    note right: Alert assigned to analyst\nInitial triage begins\nAwaiting investigation
+}
+
+OPEN --> INVESTIGATING : Operator begins\nactive investigation
+
+state INVESTIGATING {
+    note right: Analyst correlating with\nother events, running\nAI analysis (UC-31)
+}
+
+INVESTIGATING --> RESOLVED : Root cause identified\nRemediation applied
+
+state RESOLVED {
+    note right: Alert closed with\nresolution notes\nAudit trail complete
+}
+
+RESOLVED --> [*] : Final state
+
+note bottom of NEW
+    Entry: Set created_at timestamp,
+    assign default severity from
+    ML scoring (UC-14/UC-16)
+end note
+
+note bottom of OPEN
+    Entry: Set assigned_to analyst,
+    log acknowledgment timestamp
+end note
+
+note bottom of INVESTIGATING
+    Entry: Log investigation start,
+    enable cross-referencing with
+    other alerts and incidents
+end note
+
+note bottom of RESOLVED
+    Entry: Set resolved_at timestamp,
+    record resolution notes,
+    update incident status
+end note
+
+@enduml

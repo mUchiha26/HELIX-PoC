@@ -1,0 +1,17 @@
+<?php
+
+
+$host = 'localhost';
+$dbname = 'helixdb';
+$user = 'helixdb_admin';
+ $password = 'HELIXadmin123.';
+try {
+    $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $user, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+    echo "Connexion réussie !\n";
+} catch (PDOException $e) {
+die("Erreur : " . $e->getMessage());
+}

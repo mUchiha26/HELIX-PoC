@@ -1,0 +1,89 @@
+@startuml state_article
+title HELIX Platform – Article State Machine
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #3C3489
+    FontColor #3C3489
+    FontSize 12
+    AttributeFontColor #5A50B0
+    AttributeFontSize 10
+}
+skinparam ArrowColor #5A50B0
+skinparam NoteBackgroundColor #F8F7F4
+skinparam NoteBorderColor #CCCAC0
+skinparam NoteFontColor #3A3A38
+
+[*] --> DRAFT : Authenticated User\ncreates article (UC-23)
+
+state DRAFT {
+    note right: Article being composed\nVisible only to author\nContent editable at any time
+}
+
+DRAFT --> PENDING : Author submits\nfor moderation
+
+state PENDING {
+    note right: Article queued for\nAdmin review (UC-26)\nNot yet searchable\nor publicly visible
+}
+
+PENDING --> PUBLISHED : Admin approves\narticle
+
+state PUBLISHED {
+    note right: Article live and\nsearchable (UC-22)\nVisible to all authenticated users\nIndexed in knowledge base
+}
+
+PUBLISHED --> [*] : Final state
+
+PENDING --> REJECTED : Admin rejects\nwith reason
+
+state REJECTED {
+    note right: Author notified with\nrejection reason\nDraft preserved for revision
+}
+
+REJECTED --> DRAFT : Author revises\nbased on feedback
+
+DRAFT --> PENDING : Author resubmits\nfor moderation
+
+PUBLISHED --> ARCHIVED : Admin archives\npublished article
+
+state ARCHIVED {
+    note right: Article removed from\nsearch results\nContent preserved for\nhistorical reference
+}
+
+ARCHIVED --> [*] : Final state
+
+note bottom of DRAFT
+    Entry: Set status='draft',
+    author_id, created_at=NOW(),
+    content editable by author
+end note
+
+note bottom of PENDING
+    Entry: Set status='pending',
+    submitted_at=NOW(),
+    added to moderation queue
+end note
+
+note bottom of PUBLISHED
+    Entry: Set status='published',
+    published_at=NOW(),
+    approved_by=admin_id,
+    searchable in knowledge base
+end note
+
+note bottom of REJECTED
+    Entry: Set status='rejected',
+    rejection_reason,
+    notified_at=NOW()
+end note
+
+note bottom of ARCHIVED
+    Entry: Set status='archived',
+    archived_at=NOW(),
+    removed from search index,
+    content preserved
+end note
+
+@enduml
