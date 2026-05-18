@@ -64,8 +64,8 @@ MySQL (helix_db)
 ```
 PHASE 0 → PHASE 1 → PHASE 2 → PHASE 3 → PHASE 4 → PHASE 5 → PHASE 6 → PHASE 7 → PHASE 8 → PHASE 9 → PHASE 10
   │           │           │           │           │           │           │           │           │          │           │
-Setup     Architecture  Auth +    Dashboard   Log         Alert       ML          AI        Scanner  Integration  Docker
-& Git     & DB Design   RBAC      & Routing  Ingestion   Module     Detection  Assistant    Module   & Testing   & Deploy
+Setup     Architecture  Auth +    Dashboard   Log         Alert       ML          AI        FIM        Integration  Docker
+& Git     & DB Design   RBAC      & Routing  Ingestion   Module     Detection  Assistant  (Java)     & Testing   & Deploy
 ```
 
 **Dependency chain (strict):**
@@ -78,7 +78,7 @@ Setup     Architecture  Auth +    Dashboard   Log         Alert       ML        
 - Phase 6 requires Phase 5 (alerts are generated from scored logs)
 - Phase 7 requires Phase 5 (ML needs log data to score)
 - Phase 8 requires Phase 6 (AI analyzes alerts enriched by ML scores)
-- Phase 9 requires Phase 2 (scanner only needs auth, independent of logs/ML)
+- Phase 9 requires Phase 2 (FIM only needs auth + Java module, independent of logs/ML)
 - Phase 10 requires Phases 2–9 (all modules complete and individually tested)
 - Phase 11 requires Phase 10 (containerize only a stable application)
 
@@ -2922,56 +2922,293 @@ function appendMessage(role, text) {
 
 ---
 
-## PHASE 8 — Scanner Module (FR-060 to FR-063)
+## PHASE 8 — File Integrity Monitor (FR-060 to FR-063)
 
-> **Why now:** The scanner is the most security-sensitive module. It uses `JavaBridge` (already learned in Phase 4), requires strict role enforcement (auth is rock-solid from Phase 2), and is independent of the log/alert/ML pipeline. Building it last among feature modules is deliberate.
+> **Why now:** The Java module is the last empty slot in the architecture. FIM uses only the Java standard library — zero external dependencies — making it the fastest path to a working, demoable Java deliverable. It is independent of the log/alert/ML pipeline and only requires auth (Phase 2) and the JavaBridge pattern (Phase 4).
 
 ### Objective
 
-Implement a controlled port scanner and hash scanner using the Java module, with result persistence and audit trail.
+Implement a File Integrity Monitor in Java that creates cryptographic baselines of directory trees and detects unauthorized changes (additions, deletions, modifications). Results are returned as JSON to PHP, persisted in MySQL, and displayed on the frontend.
 
 ### Learning Goals
 
-- Understand how `HashScanner.java` and `LogParser.java` serve different purposes from the same Java module
-- Understand why every scan must be persisted (regulatory audit trail)
-- Understand input validation for network targets (IP + hostname validation)
+- Understand how SHA-256 hashing provides tamper evidence
+- Understand baseline-based integrity monitoring (Tripwire/OSSEC model)
+- Understand JSON serialization from Java to PHP via `shell_exec()`
+- Understand why `escapeshellarg()` is non-negotiable for user-supplied paths
 
 ### Key Theoretical Concepts
 
-- **TCP port states:** Open (SYN-ACK received), Closed (RST received), Filtered (no response)
-- **Hash scanner use case:** Compare file hashes against known malicious hashes — common IOC technique
-- **Audit trail:** Every scan, by every user, at every timestamp, must be recorded — this is a compliance requirement
-- **`escapeshellarg()` is non-negotiable:** User inputs a target IP — this must never reach `shell_exec()` raw
+- **File Integrity Monitoring:** Record the state of files (hash, size, permissions) at a point in time, then compare later to detect drift
+- **SHA-256:** Cryptographic hash — even a 1-byte change produces a completely different hash
+- **Baseline lifecycle:** Create → Store → Verify → Report → Re-baseline
+- **Change classification:** Added (new file), Modified (hash changed), Deleted (file removed), Unchanged (hash matches)
+- **`java.nio.file.Files.walk()`:** Java's recursive directory traversal API
+- **`java.security.MessageDigest`:** Java's built-in hashing API — no external libraries needed
 
 ### Practical Tasks
 
-#### 8.1 — Java Module Review
+#### 8.1 — Java Module: Create FIM Classes
 
-Your `java-module/src/` already contains:
+Create these files in `java-module/src/`:
 
-- `HashScanner.java` — compares file hashes against a known-bad list
-- `LogParser.java` — parses log files (used in Phase 4)
-- `LogFormat.java` — log format definition
-- `ParseResult.java` — DTO for parsed results
+`java-module/src/ScanResult.java` — DTO for a single file's scan result:
 
-For the scanner module, you will primarily use `HashScanner.java`. Review it:
+```java
+package helix;
 
-- [ ] Understand its input format (command-line arguments)
-- [ ] Understand its output format (ensure it's JSON to stdout)
-- [ ] Update `compile.sh` if needed to compile all Java files
-- [ ] Test: `java -cp build HashScanner <test-input>` → verify output
+public class ScanResult {
+    public String path;
+    public String sha256;
+    public long size;
+    public String status; // "added", "modified", "deleted", "unchanged"
 
-#### 8.2 — Scanner Service
+    public ScanResult(String path, String sha256, long size, String status) {
+        this.path = path;
+        this.sha256 = sha256;
+        this.size = size;
+        this.status = status;
+    }
+}
+```
 
-`api/services/ScannerService.php`:
+`java-module/src/HashCalculator.java` — SHA-256 hashing utility:
+
+```java
+package helix;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.MessageDigest;
+
+public class HashCalculator {
+    public static String sha256(String filePath) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream fis = new FileInputStream(filePath)) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+        }
+        byte[] hashBytes = digest.digest();
+        StringBuilder hex = new StringBuilder();
+        for (byte b : hashBytes) {
+            hex.append(String.format("%02x", b));
+        }
+        return hex.toString();
+    }
+}
+```
+
+`java-module/src/BaselineStore.java` — save/load baseline as JSON:
+
+```java
+package helix;
+
+import java.io.*;
+import java.util.*;
+
+public class BaselineStore {
+    public static void save(String baselineFile, Map<String, String> baseline) throws Exception {
+        try (PrintWriter out = new PrintWriter(new FileWriter(baselineFile))) {
+            for (Map.Entry<String, String> entry : baseline.entrySet()) {
+                out.println(entry.getKey() + "|" + entry.getValue());
+            }
+        }
+    }
+
+    public static Map<String, String> load(String baselineFile) throws Exception {
+        Map<String, String> baseline = new LinkedHashMap<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(baselineFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split("\\|", 2);
+                if (parts.length == 2) {
+                    baseline.put(parts[0], parts[1]);
+                }
+            }
+        }
+        return baseline;
+    }
+}
+```
+
+`java-module/src/FileIntegrityMonitor.java` — main entry point:
+
+```java
+package helix;
+
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+
+public class FileIntegrityMonitor {
+    public static void main(String[] args) {
+        try {
+            String mode = args[0]; // "baseline" or "verify"
+            String targetDir = args[1];
+            String baselineFile = args.length > 2 ? args[2] : "baseline.dat";
+
+            if (mode.equals("baseline")) {
+                runBaseline(targetDir, baselineFile);
+            } else if (mode.equals("verify")) {
+                runVerify(targetDir, baselineFile);
+            } else {
+                System.err.println("Unknown mode: " + mode);
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            System.err.println("{\"error\": \"" + escapeJson(e.getMessage()) + "\"}");
+            System.exit(1);
+        }
+    }
+
+    private static void runBaseline(String dir, String baselineFile) throws Exception {
+        Map<String, String> baseline = new LinkedHashMap<>();
+        Files.walk(Paths.get(dir))
+             .filter(Files::isRegularFile)
+             .forEach(path -> {
+                 try {
+                     String hash = HashCalculator.sha256(path.toString());
+                     baseline.put(path.toString(), hash);
+                 } catch (Exception e) {
+                     // Skip unreadable files
+                 }
+             });
+
+        BaselineStore.save(baselineFile, baseline);
+
+        // Output JSON summary
+        System.out.println("{\"mode\": \"baseline\", \"path\": \"" + escapeJson(dir) +
+                           "\", \"file_count\": " + baseline.size() +
+                           ", \"baseline_file\": \"" + escapeJson(baselineFile) + "\"}");
+    }
+
+    private static void runVerify(String dir, String baselineFile) throws Exception {
+        Map<String, String> oldBaseline = BaselineStore.load(baselineFile);
+        Map<String, String> currentScan = new LinkedHashMap<>();
+
+        Files.walk(Paths.get(dir))
+             .filter(Files::isRegularFile)
+             .forEach(path -> {
+                 try {
+                     String hash = HashCalculator.sha256(path.toString());
+                     currentScan.put(path.toString(), hash);
+                 } catch (Exception e) {
+                     // Skip unreadable files
+                 }
+             });
+
+        List<ScanResult> results = new ArrayList<>();
+
+        // Check for modified and deleted files
+        for (Map.Entry<String, String> entry : oldBaseline.entrySet()) {
+            String path = entry.getKey();
+            String oldHash = entry.getValue();
+            if (currentScan.containsKey(path)) {
+                String newHash = currentScan.get(path);
+                String status = oldHash.equals(newHash) ? "unchanged" : "modified";
+                long size = Files.size(Paths.get(path));
+                results.add(new ScanResult(path, newHash, size, status));
+            } else {
+                results.add(new ScanResult(path, "", 0, "deleted"));
+            }
+        }
+
+        // Check for added files
+        for (Map.Entry<String, String> entry : currentScan.entrySet()) {
+            if (!oldBaseline.containsKey(entry.getKey())) {
+                String path = entry.getKey();
+                long size = Files.size(Paths.get(path));
+                results.add(new ScanResult(path, entry.getValue(), size, "added"));
+            }
+        }
+
+        // Output JSON
+        System.out.println(resultsToJson(results));
+    }
+
+    private static String resultsToJson(List<ScanResult> results) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"results\": [");
+        for (int i = 0; i < results.size(); i++) {
+            ScanResult r = results.get(i);
+            if (i > 0) sb.append(",");
+            sb.append("{\"path\": \"").append(escapeJson(r.path)).append("\",");
+            sb.append("\"sha256\": \"").append(r.sha256).append("\",");
+            sb.append("\"size\": ").append(r.size).append(",");
+            sb.append("\"status\": \"").append(r.status).append("\"}");
+        }
+        sb.append("]}");
+        return sb.toString();
+    }
+
+    private static String escapeJson(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+}
+```
+
+Update `java-module/compile.sh`:
+
+```bash
+#!/bin/bash
+mkdir -p build
+javac -d build src/HashCalculator.java src/BaselineStore.java src/ScanResult.java src/FileIntegrityMonitor.java
+echo "Compilation complete"
+```
+
+Tasks:
+- [ ] Create all four Java files in `java-module/src/`
+- [ ] Update `compile.sh`
+- [ ] Run `./compile.sh` — verify `.class` files appear in `java-module/build/`
+- [ ] Test baseline: `java -cp build helix.FileIntegrityMonitor baseline /tmp/test-dir baseline.dat`
+- [ ] Test verify: modify a file in `/tmp/test-dir`, then run `java -cp build helix.FileIntegrityMonitor verify /tmp/test-dir baseline.dat`
+- [ ] Confirm JSON output is valid
+
+#### 8.2 — Database Migration
+
+Create `database/migrations/002_fim_tables.sql`:
+
+```sql
+CREATE TABLE fim_baselines (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    target_path  VARCHAR(512) NOT NULL,
+    baseline_data TEXT NOT NULL,
+    file_count   INT NOT NULL,
+    created_by   INT NOT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE fim_scan_results (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    baseline_id INT NOT NULL,
+    file_path   VARCHAR(512) NOT NULL,
+    sha256      VARCHAR(64),
+    file_size   BIGINT,
+    status      ENUM('added','modified','deleted','unchanged') NOT NULL,
+    scanned_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (baseline_id) REFERENCES fim_baselines(id) ON DELETE CASCADE
+);
+```
+
+- [ ] Run: `mysql -u helix_user -p helix_db < database/migrations/002_fim_tables.sql`
+- [ ] Verify both tables appear in phpMyAdmin
+
+#### 8.3 — FIM Service
+
+`api/services/FIMService.php`:
 
 ```php
 <?php
 namespace App\Services;
 
-use App\Models\ScanResult;
+use App\Models\FIMBaseline;
+use App\Models\FIMScanResult;
 
-class ScannerService
+class FIMService
 {
     private JavaBridge $java;
 
@@ -2980,51 +3217,107 @@ class ScannerService
         $this->java = new JavaBridge();
     }
 
-    public function portScan(string $target, string $portRange, int $userId): array
+    public function createBaseline(string $targetDir, int $userId): array
     {
-        $this->validateTarget($target);
-        $this->validatePortRange($portRange);
+        $this->validateDirectory($targetDir);
 
-        $results = $this->java->runPortScan($target, $portRange);
+        $baselineFile = sys_get_temp_dir() . '/helix_baseline_' . uniqid() . '.dat';
 
-        // Persist every result — audit trail
-        ScanResult::batchInsert($results, $target, $userId);
+        $output = $this->java->runFIM('baseline', $targetDir, $baselineFile);
+        $result = json_decode($output, true);
 
-        return $results;
-    }
-
-    public function hashScan(string $filePath, int $userId): array
-    {
-        $results = $this->java->runHashScan($filePath);
-        return $results;
-    }
-
-    private function validateTarget(string $target): void
-    {
-        if (!filter_var($target, FILTER_VALIDATE_IP) && !$this->isValidHostname($target)) {
-            throw new \InvalidArgumentException("Invalid target: {$target}");
+        if (isset($result['error'])) {
+            throw new \RuntimeException($result['error']);
         }
+
+        $baselineId = FIMBaseline::create(
+            $targetDir,
+            file_get_contents($baselineFile),
+            $result['file_count'],
+            $userId
+        );
+
+        @unlink($baselineFile);
+
+        return ['baseline_id' => $baselineId, 'file_count' => $result['file_count']];
     }
 
-    private function validatePortRange(string $range): void
+    public function verifyIntegrity(int $baselineId, int $userId): array
     {
-        if (!preg_match('/^\d+(-\d+)?$/', $range)) {
-            throw new \InvalidArgumentException("Invalid port range: {$range}");
+        $baseline = FIMBaseline::findById($baselineId);
+        if (!$baseline) {
+            throw new \RuntimeException("Baseline not found");
         }
+
+        $baselineFile = sys_get_temp_dir() . '/helix_baseline_' . uniqid() . '.dat';
+        file_put_contents($baselineFile, $baseline['baseline_data']);
+
+        $output = $this->java->runFIM('verify', $baseline['target_path'], $baselineFile);
+        $result = json_decode($output, true);
+
+        if (isset($result['error'])) {
+            @unlink($baselineFile);
+            throw new \RuntimeException($result['error']);
+        }
+
+        $changes = FIMScanResult::batchInsert($baselineId, $result['results'] ?? []);
+
+        @unlink($baselineFile);
+
+        return [
+            'baseline_id' => $baselineId,
+            'target'      => $baseline['target_path'],
+            'changes'     => $changes,
+        ];
     }
 
-    private function isValidHostname(string $h): bool
+    public function getHistory(int $userId): array
     {
-        return (bool) preg_match('/^[a-zA-Z0-9][a-zA-Z0-9\-.]{0,253}[a-zA-Z0-9]$/', $h);
+        return FIMBaseline::history($userId);
+    }
+
+    private function validateDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            throw new \InvalidArgumentException("Not a directory: {$dir}");
+        }
+
+        $realPath = realpath($dir);
+        $allowedRoot = realpath('/home');
+
+        if ($realPath === false || !str_starts_with($realPath, $allowedRoot)) {
+            throw new \InvalidArgumentException("Directory outside allowed path");
+        }
     }
 }
 ```
 
-Add `runPortScan()` and `runHashScan()` methods to `api/services/JavaBridge.php`.
+Add `runFIM()` to `api/services/JavaBridge.php`:
 
-#### 8.3 — Scan Result Model
+```php
+public function runFIM(string $mode, string $targetDir, string $baselineFile): string
+{
+    $javaPath = Environment::get('JAVA_BUILD_PATH', __DIR__ . '/../../java-module/build');
+    $cmd = sprintf(
+        'java -cp %s helix.FileIntegrityMonitor %s %s %s 2>&1',
+        escapeshellarg($javaPath),
+        escapeshellarg($mode),
+        escapeshellarg($targetDir),
+        escapeshellarg($baselineFile)
+    );
 
-`api/models/ScanResult.php`:
+    $output = shell_exec($cmd);
+    if ($output === null) {
+        throw new \RuntimeException('Java FIM execution failed');
+    }
+
+    return trim($output);
+}
+```
+
+#### 8.4 — FIM Models
+
+`api/models/FIMBaseline.php`:
 
 ```php
 <?php
@@ -3032,38 +3325,40 @@ namespace App\Models;
 
 use App\Config\Database;
 
-class ScanResult
+class FIMBaseline
 {
-    public static function batchInsert(array $results, string $target, int $userId): void
+    public static function create(string $targetPath, string $baselineData, int $fileCount, int $userId): int
     {
-        if (empty($results)) return;
-
-        $db           = Database::getInstance();
-        $placeholders = implode(',', array_fill(0, count($results), '(?,?,?,?,?)'));
-        $stmt         = $db->prepare(
-            "INSERT INTO scan_results (performed_by, target, port, protocol, status) VALUES {$placeholders}"
+        $db   = Database::getInstance();
+        $stmt = $db->prepare(
+            'INSERT INTO fim_baselines (target_path, baseline_data, file_count, created_by) VALUES (?, ?, ?, ?)'
         );
+        $stmt->execute([$targetPath, $baselineData, $fileCount, $userId]);
+        return (int) $db->lastInsertId();
+    }
 
-        $params = [];
-        foreach ($results as $r) {
-            $params[] = $userId;
-            $params[] = $target;
-            $params[] = $r['port'];
-            $params[] = $r['protocol'] ?? 'tcp';
-            $params[] = $r['status'];
-        }
-
-        $stmt->execute($params);
+    public static function findById(int $id): ?array
+    {
+        $db   = Database::getInstance();
+        $stmt = $db->prepare('SELECT * FROM fim_baselines WHERE id = ? LIMIT 1');
+        $stmt->execute([$id]);
+        return $stmt->fetch() ?: null;
     }
 
     public static function history(int $userId): array
     {
         $db   = Database::getInstance();
         $stmt = $db->prepare(
-            "SELECT target, scanned_at, COUNT(*) as total_ports,
-                    SUM(status = 'open') as open_ports
-             FROM scan_results WHERE performed_by = ?
-             GROUP BY target, scanned_at ORDER BY scanned_at DESC LIMIT 50"
+            'SELECT fb.id, fb.target_path, fb.file_count, fb.created_at,
+                    COUNT(fsr.id) as total_changes,
+                    SUM(fsr.status = "added") as added,
+                    SUM(fsr.status = "modified") as modified,
+                    SUM(fsr.status = "deleted") as deleted
+             FROM fim_baselines fb
+             LEFT JOIN fim_scan_results fsr ON fb.id = fsr.baseline_id
+             WHERE fb.created_by = ?
+             GROUP BY fb.id
+             ORDER BY fb.created_at DESC LIMIT 50'
         );
         $stmt->execute([$userId]);
         return $stmt->fetchAll();
@@ -3071,131 +3366,262 @@ class ScanResult
 }
 ```
 
-#### 8.4 — Scanner Controller
+`api/models/FIMScanResult.php`:
 
-`api/controllers/ScannerController.php`:
+```php
+<?php
+namespace App\Models;
+
+use App\Config\Database;
+
+class FIMScanResult
+{
+    public static function batchInsert(int $baselineId, array $results): array
+    {
+        if (empty($results)) return [];
+
+        $db = Database::getInstance();
+        $stmt = $db->prepare(
+            'INSERT INTO fim_scan_results (baseline_id, file_path, sha256, file_size, status)
+             VALUES (?, ?, ?, ?, ?)'
+        );
+
+        $changes = ['added' => 0, 'modified' => 0, 'deleted' => 0, 'unchanged' => 0];
+
+        foreach ($results as $r) {
+            $stmt->execute([
+                $baselineId,
+                $r['path'],
+                $r['sha256'] ?? null,
+                $r['size'] ?? 0,
+                $r['status']
+            ]);
+            if (isset($changes[$r['status']])) {
+                $changes[$r['status']]++;
+            }
+        }
+
+        return $changes;
+    }
+}
+```
+
+#### 8.5 — FIM Controller
+
+`api/controllers/FIMController.php`:
 
 ```php
 <?php
 namespace App\Controllers;
 
-use App\Services\ScannerService;
+use App\Services\FIMService;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\RoleMiddleware;
-use App\Models\ScanResult;
 use App\Helpers\Response;
 
-class ScannerController
+class FIMController
 {
-    private ScannerService $service;
+    private FIMService $service;
 
     public function __construct()
     {
-        $this->service = new ScannerService();
+        $this->service = new FIMService();
     }
 
-    public function scan(): void
+    public function baseline(): void
     {
-        RoleMiddleware::require(['administrator', 'red_team', 'purple_team']);
+        RoleMiddleware::require(['administrator', 'blue_team', 'purple_team']);
 
         $user = AuthMiddleware::currentUser();
         $body = json_decode(file_get_contents('php://input'), true) ?? [];
 
         try {
-            $results = $this->service->portScan(
-                $body['target']     ?? '',
-                $body['port_range'] ?? '1-1024',
+            $result = $this->service->createBaseline(
+                $body['target_dir'] ?? '',
                 $user['id']
             );
-            Response::success(['results' => $results, 'count' => count($results)]);
+            Response::success($result, 'Baseline created');
         } catch (\InvalidArgumentException $e) {
             Response::error($e->getMessage(), 422);
         } catch (\Exception $e) {
             error_log($e->getMessage());
-            Response::error('Scan failed', 500);
+            Response::error('Baseline creation failed', 500);
         }
     }
 
-    public function results(): void
+    public function verify(): void
     {
-        RoleMiddleware::require(['administrator', 'red_team', 'purple_team']);
+        RoleMiddleware::require(['administrator', 'blue_team', 'purple_team']);
+
         $user = AuthMiddleware::currentUser();
-        Response::success(ScanResult::history($user['id']));
+        $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        try {
+            $result = $this->service->verifyIntegrity(
+                (int) ($body['baseline_id'] ?? 0),
+                $user['id']
+            );
+            Response::success($result, 'Integrity check complete');
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+            Response::error($e->getMessage(), 500);
+        }
+    }
+
+    public function history(): void
+    {
+        AuthMiddleware::handle();
+        $user = AuthMiddleware::currentUser();
+        Response::success($this->service->getHistory($user['id']));
     }
 }
 ```
 
-#### 8.5 — Frontend: Scanner
+Register routes in `api/index.php`:
 
-`frontend/js/scanner.js`:
+```php
+use App\Controllers\FIMController;
+
+$routes['POST']['/fim/baseline'] = [FIMController::class, 'baseline'];
+$routes['POST']['/fim/verify']   = [FIMController::class, 'verify'];
+$routes['GET']['/fim/history']   = [FIMController::class, 'history'];
+```
+
+#### 8.6 — Frontend: FIM
+
+`frontend/js/fim.js`:
 
 ```javascript
 import { api } from "./api.js";
 
 export async function render() {
   document.getElementById("app").innerHTML = `
-        <div class="page-header">
-            <h1>Red Team Scanner</h1>
-            <div class="warning-banner">⚠ Only scan systems you are authorized to test</div>
-        </div>
-        <div class="scan-form">
-            <input type="text" id="scan-target" placeholder="Target IP or hostname">
-            <input type="text" id="port-range"  placeholder="Port range (e.g. 1-1024)" value="1-1024">
-            <button id="scan-btn">Run Scan</button>
-        </div>
-        <div id="scan-results"></div>
-        <h2>Scan History</h2>
-        <div id="scan-history"></div>
-    `;
+    <div class="page-header">
+      <h1>File Integrity Monitor</h1>
+    </div>
+    <div class="fim-section">
+      <h2>Create Baseline</h2>
+      <div class="fim-form">
+        <input type="text" id="fim-target" placeholder="Directory path (e.g. /home/user/project)">
+        <button id="fim-baseline-btn">Create Baseline</button>
+      </div>
+      <div id="fim-baseline-result"></div>
+    </div>
+    <div class="fim-section">
+      <h2>Verify Integrity</h2>
+      <div class="fim-form">
+        <input type="number" id="fim-baseline-id" placeholder="Baseline ID">
+        <button id="fim-verify-btn">Run Verification</button>
+      </div>
+      <div id="fim-verify-result"></div>
+    </div>
+    <div class="fim-section">
+      <h2>Scan History</h2>
+      <div id="fim-history"></div>
+    </div>
+  `;
 
-  document.getElementById("scan-btn").addEventListener("click", runScan);
+  document.getElementById("fim-baseline-btn").addEventListener("click", createBaseline);
+  document.getElementById("fim-verify-btn").addEventListener("click", runVerify);
   loadHistory();
 }
 
-async function runScan() {
-  const target = document.getElementById("scan-target").value;
-  const portRange = document.getElementById("port-range").value;
+async function createBaseline() {
+  const targetDir = document.getElementById("fim-target").value;
+  document.getElementById("fim-baseline-result").innerHTML = "<p>Creating baseline...</p>";
 
-  document.getElementById("scan-results").innerHTML = "<p>Scanning...</p>";
-
-  const { data, error } = await api.post("/scanner/scan", {
-    target,
-    port_range: portRange,
-  });
+  const { data, error } = await api.post("/fim/baseline", { target_dir: targetDir });
 
   if (error) {
-    document.getElementById("scan-results").innerHTML =
-      `<p class="error">${error}</p>`;
+    document.getElementById("fim-baseline-result").innerHTML = `<p class="error">${error}</p>`;
     return;
   }
 
-  const openPorts = data.results.filter((r) => r.status === "open");
-  document.getElementById("scan-results").innerHTML = `
-        <p>${data.count} ports scanned · ${openPorts.length} open</p>
-        ${openPorts.map((r) => `<div class="port-open">${r.port}/tcp — OPEN</div>`).join("")}
-    `;
-
+  document.getElementById("fim-baseline-result").innerHTML = `
+    <p class="success">Baseline #${data.baseline_id} created — ${data.file_count} files hashed</p>
+  `;
   loadHistory();
+}
+
+async function runVerify() {
+  const baselineId = document.getElementById("fim-baseline-id").value;
+  document.getElementById("fim-verify-result").innerHTML = "<p>Verifying integrity...</p>";
+
+  const { data, error } = await api.post("/fim/verify", { baseline_id: parseInt(baselineId) });
+
+  if (error) {
+    document.getElementById("fim-verify-result").innerHTML = `<p class="error">${error}</p>`;
+    return;
+  }
+
+  const c = data.changes;
+  document.getElementById("fim-verify-result").innerHTML = `
+    <div class="fim-changes">
+      <span class="change-added">+ ${c.added} added</span>
+      <span class="change-modified">~ ${c.modified} modified</span>
+      <span class="change-deleted">- ${c.deleted} deleted</span>
+      <span class="change-unchanged">= ${c.unchanged} unchanged</span>
+    </div>
+  `;
+  loadHistory();
+}
+
+async function loadHistory() {
+  const { data } = await api.get("/fim/history");
+  if (!data || data.length === 0) {
+    document.getElementById("fim-history").innerHTML = "<p>No scans yet</p>";
+    return;
+  }
+
+  document.getElementById("fim-history").innerHTML = `
+    <table class="fim-history-table">
+      <thead>
+        <tr><th>ID</th><th>Target</th><th>Files</th><th>Changes</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        ${data.map(b => `
+          <tr>
+            <td>#${b.id}</td>
+            <td>${b.target_path}</td>
+            <td>${b.file_count}</td>
+            <td>${b.total_changes || 0}</td>
+            <td>${b.created_at}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 ```
 
 ### Deliverables
 
-- `api/services/ScannerService.php` with target validation
-- `api/services/JavaBridge.php` extended with `runPortScan()`, `runHashScan()`
-- `api/models/ScanResult.php`
-- `api/controllers/ScannerController.php`
-- `frontend/js/scanner.js`
-- Java module updated and recompiled
+- `java-module/src/FileIntegrityMonitor.java` — CLI entry point (baseline/verify modes)
+- `java-module/src/HashCalculator.java` — SHA-256 hashing utility
+- `java-module/src/BaselineStore.java` — baseline persistence
+- `java-module/src/ScanResult.java` — DTO for scan results
+- `java-module/compile.sh` — updated to compile all FIM classes
+- `api/services/FIMService.php` — business logic with directory validation
+- `api/services/JavaBridge.php` — extended with `runFIM()` method
+- `api/models/FIMBaseline.php` — baseline CRUD
+- `api/models/FIMScanResult.php` — change result persistence
+- `api/controllers/FIMController.php` — request handling with role enforcement
+- `frontend/js/fim.js` — FIM UI module
+- `database/migrations/002_fim_tables.sql` — FIM tables
 
 ### Validation Criteria
 
 - [ ] FR-060 to FR-063 checked in traceability matrix
-- [ ] Blue Team + Learner roles receive 403 on scanner endpoints
-- [ ] Invalid IP/hostname rejected before Java invocation
-- [ ] Scan results persisted in `scan_results` table
-- [ ] Scan history endpoint returns grouped results by target
-- [ ] Git commit: `feat(scanner): implement port and hash scanner with Java module`
+- [ ] Java module compiles without errors: `./java-module/compile.sh`
+- [ ] `java -cp build helix.FileIntegrityMonitor baseline /tmp/test baseline.dat` outputs valid JSON
+- [ ] Modifying a file and running verify detects it as "modified"
+- [ ] Adding a new file and running verify detects it as "added"
+- [ ] Deleting a file and running verify detects it as "deleted"
+- [ ] Blue Team + Learner roles receive 403 on FIM endpoints (Learner has no access)
+- [ ] Directory outside allowed path is rejected before Java invocation
+- [ ] Baseline and scan results persisted in MySQL
+- [ ] Frontend displays color-coded change summary (added/modified/deleted/unchanged)
+- [ ] Git commit: `feat(fim): implement File Integrity Monitor with Java module`
 
 ---
 

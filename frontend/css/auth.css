@@ -1,0 +1,305 @@
+/* =============================================================
+   HELIX PLATFORM — AUTH.CSS
+   Login and Register page styles
+   ============================================================= */
+
+/* ─────────────────────────────────────────────
+   1. AUTH LAYOUT
+ ───────────────────────────────────────────── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ─────────────────────────────────────────────
+   2. AUTH CARD
+ ───────────────────────────────────────────── */
+.auth-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-radius);
+  padding: 2.5rem;
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue-accent), var(--purple-team));
+}
+
+.auth-card-glow {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 200px;
+  height: 200px;
+  background: var(--blue-accent);
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   3. AUTH HEADER
+ ───────────────────────────────────────────── */
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 1rem;
+}
+
+.auth-logo .logo-bracket { color: var(--blue-accent); opacity: 0.7; }
+.auth-logo .logo-text { text-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+
+.auth-title {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ─────────────────────────────────────────────
+   4. AUTH FORM
+ ───────────────────────────────────────────── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.form-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.7rem 0.85rem;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--blue-accent);
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.form-input.error {
+  border-color: var(--red-team);
+}
+
+.form-error {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--red-team);
+  display: none;
+}
+
+.form-error.visible {
+  display: block;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-checkbox input[type="checkbox"] {
+  accent-color: var(--blue-accent);
+  width: 16px;
+  height: 16px;
+}
+
+.form-checkbox label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* ─────────────────────────────────────────────
+   5. AUTH BUTTONS
+ ───────────────────────────────────────────── */
+.auth-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-mid);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-btn-primary {
+  background: linear-gradient(135deg, var(--blue-accent), #0099cc);
+  color: var(--bg-primary);
+}
+
+.auth-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+}
+
+.auth-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-btn .btn-loader {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(7, 11, 20, 0.3);
+  border-top-color: var(--bg-primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: 0 auto;
+}
+
+.auth-btn.loading .btn-text { display: none; }
+.auth-btn.loading .btn-loader { display: block; }
+
+/* ─────────────────────────────────────────────
+   6. AUTH FOOTER
+ ───────────────────────────────────────────── */
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.auth-footer a {
+  color: var(--blue-accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color var(--transition-fast);
+}
+
+.auth-footer a:hover {
+  color: var(--text-primary);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.25rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.auth-divider span {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────
+   7. PASSWORD STRENGTH
+ ───────────────────────────────────────────── */
+.password-strength {
+  margin-top: 0.25rem;
+}
+
+.strength-bar {
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  transition: all var(--transition-mid);
+}
+
+.strength-fill.weak { width: 33%; background: var(--red-team); }
+.strength-fill.medium { width: 66%; background: var(--ai-gold); }
+.strength-fill.strong { width: 100%; background: #22c55e; }
+
+.strength-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.strength-label.weak { color: var(--red-team); }
+.strength-label.medium { color: var(--ai-gold); }
+.strength-label.strong { color: #22c55e; }

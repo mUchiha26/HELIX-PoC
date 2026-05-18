@@ -22,4 +22,3 @@ class Environment
         return self::$vars[$key] ?? $_ENV[$key] ?? getenv($key) ?: $default;
     }
 }
-?>

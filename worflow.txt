@@ -1,0 +1,73 @@
+File Breakdown
+index.php — Front controller. Every request hits this first. Parses the URL, applies middleware, and dispatches to the right controller.
+Config/
+- Environment.php — Loads .env variables (DB creds, API keys, OpenRouter config)
+- Database.php — Singleton PDO connection to MySQL
+- Cors.php — Sets CORS headers so the frontend can call the API
+Middleware/
+- AuthMiddleware.php — Checks if user is logged in (session exists)
+- RoleMiddleware.php — Checks if user has permission for the action
+Helpers/
+- Response.php — Standardizes JSON output (success, error, unauthorized, etc.)
+- Validator.php — Validates incoming data (required fields, email format, min length)
+Controllers/ — Parse HTTP requests, call services, return responses. One per feature.
+- AuthController, DashboardController, AIController, UserController
+Services/ — Business logic. Controllers delegate here.
+- AuthService, DashboardService, AIService, UserService
+- JavaBridge — Executes Java .class files via shell_exec()
+Models/ — Database queries only. No logic, just SQL.
+- User, LogEntry, Alert, AnomalyScore, ChatSession, ScanResult
+Workflow
+Browser Request
+       │
+       ▼
+  index.php ──────────────────────────────────┐
+       │                                       │
+       ▼                                       │
+  Cors.php (set headers)                       │
+       │                                       │
+       ▼                                       │
+  Parse URL → /auth/login                      │
+       │                                       │
+       ▼                                       │
+  AuthMiddleware? ── No session? → 401 ────────┘
+       │
+       ▼
+  RoleMiddleware? ── Wrong role? → 403 ────────┘
+       │
+       ▼
+  AuthController::login()
+       │
+       ▼
+  AuthService::login()  ← business logic (hash check, session create)
+       │
+       ▼
+  User::findByUsername()  ← SQL query
+       │
+       ▼
+  Database.php  ← PDO executes query on MySQL
+       │
+       ▼
+  Response::success()  ← JSON back to browser
+Rule: Controllers never touch the database. Services never touch HTTP. Models only run SQL. Each layer talks only to the one below it.
+
+Admin Routes (administrator only)
+GET    /users              — List all users with pagination
+GET    /users/stats        — User statistics (total, by role)
+GET    /users/{id}         — Get single user details
+PUT    /users/{id}/role    — Change user role
+POST   /users/{id}/toggle  — Enable/disable user account
+DELETE /users/{id}         — Delete user (cannot delete administrators)
+
+Dashboard Routes (authenticated)
+GET    /dashboard/stats    — Aggregate platform statistics
+
+AI Routes (authenticated)
+POST   /ai/chat            — Send message to AI assistant
+GET    /ai/history         — Load chat conversation history
+
+Auth Routes (public / authenticated)
+POST   /auth/register      — Create new user account (default role: learner)
+POST   /auth/login         — Authenticate and create session
+POST   /auth/logout        — Destroy session (requires auth)
+GET    /auth/me            — Get current user info (requires auth)

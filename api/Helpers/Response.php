@@ -31,4 +31,3 @@ class Response
         self::error('Forbidden', 403);
     }
 }
-?>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HELIX — Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/components.css" />
+  </head>
+  <body>
+    <!-- Particle Canvas -->
+    <canvas id="helix-canvas"></canvas>
+
+    <!-- Dashboard Layout -->
+    <div class="dashboard-layout">
+      <!-- Sidebar Overlay (mobile) -->
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <a href="/dashboard.html" class="sidebar-logo">
+            <span class="logo-bracket">[</span>
+            <span class="logo-text">HELIX</span>
+            <span class="logo-bracket">]</span>
+          </a>
+        </div>
+
+        <!-- User Info -->
+        <div class="sidebar-user" id="sidebarUser" style="display:none;">
+          <div class="user-avatar" id="sidebarAvatar"></div>
+          <div class="user-info">
+            <div class="user-name" id="sidebarUserName"></div>
+            <span class="role-indicator" id="sidebarRole"></span>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+          <!-- Main -->
+          <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <a href="/dashboard.html" class="nav-link" data-page="dashboard">
+              <i class="bi bi-grid-3x3-gap-fill"></i> Dashboard
+            </a>
+            <a href="/alerts.html" class="nav-link" data-page="alerts">
+              <i class="bi bi-bell-fill"></i> Alerts
+              <span class="nav-badge">3</span>
+            </a>
+            <a href="/logs.html" class="nav-link" data-page="logs">
+              <i class="bi bi-journal-code"></i> Logs
+            </a>
+          </div>
+
+          <!-- Intelligence -->
+          <div class="nav-section">
+            <div class="nav-section-title">Intelligence</div>
+            <a href="/ai-assistant.html" class="nav-link" data-page="ai">
+              <i class="bi bi-robot"></i> AI Assistant
+            </a>
+            <a href="/scanner.html" class="nav-link" data-page="scanner">
+              <i class="bi bi-crosshair"></i> Scanner
+            </a>
+          </div>
+
+          <!-- Administration -->
+          <div class="nav-section">
+            <div class="nav-section-title">Administration</div>
+            <a href="/admin.html" class="nav-link" data-page="admin">
+              <i class="bi bi-shield-lock-fill"></i> Admin
+            </a>
+          </div>
+
+          <!-- Learning -->
+          <div class="nav-section">
+            <div class="nav-section-title">Learning</div>
+            <a href="/learner.html" class="nav-link" data-page="learner">
+              <i class="bi bi-mortarboard-fill"></i> Learner Hub
+            </a>
+          </div>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+          <a href="/profile.html" class="nav-link" data-page="profile">
+            <i class="bi bi-person-gear"></i> Profile
+          </a>
+          <a href="#" class="nav-link" id="logoutBtn" onclick="Auth.handleLogout()">
+            <i class="bi bi-box-arrow-left"></i> Logout
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="sidebar-toggle" id="sidebarToggle">
+              <i class="bi bi-list"></i>
+            </button>
+            <div>
+              <div class="topbar-title">Dashboard</div>
+              <div class="topbar-breadcrumb">
+                HELIX / <span>Overview</span>
+              </div>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <button class="topbar-btn" id="themeToggle" title="Toggle theme">
+              <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+            </button>
+            <button class="topbar-btn" title="Notifications">
+              <i class="bi bi-bell"></i>
+              <span class="notif-dot"></span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+          <!-- Metric Cards -->
+          <div class="dashboard-grid" id="metricCards">
+            <div class="metric-card">
+              <div class="metric-icon text-red-team">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+              </div>
+              <div class="metric-value" id="openAlerts">—</div>
+              <div class="metric-label">Open Alerts</div>
+              <div class="metric-trend trend-up">
+                <i class="bi bi-arrow-up"></i> Loading...
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon text-blue-accent">
+                <i class="bi bi-journal-code"></i>
+              </div>
+              <div class="metric-value" id="totalLogs">—</div>
+              <div class="metric-label">Total Logs</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon text-purple-team">
+                <i class="bi bi-bar-chart-line-fill"></i>
+              </div>
+              <div class="metric-value" id="avgScore">—</div>
+              <div class="metric-label">Avg Anomaly Score</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon" style="color: #22c55e">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+              <div class="metric-value" id="resolvedCount">—</div>
+              <div class="metric-label">Resolved Today</div>
+            </div>
+          </div>
+
+          <!-- Chart Row -->
+          <div class="row g-3 mb-3">
+            <!-- Alert Trend Chart -->
+            <div class="col-lg-8">
+              <div class="chart-panel">
+                <div class="chart-panel-header">
+                  <div class="chart-panel-title">
+                    <i class="bi bi-graph-up-arrow me-2"></i>Alert Trend — Last 7 Days
+                  </div>
+                </div>
+                <div class="chart-placeholder" id="trendChart">
+                  <i class="bi bi-bar-chart-line"></i>
+                  <span>Chart.js integration placeholder</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Severity Distribution -->
+            <div class="col-lg-4">
+              <div class="chart-panel">
+                <div class="chart-panel-header">
+                  <div class="chart-panel-title">
+                    <i class="bi bi-pie-chart-fill me-2"></i>Severity Distribution
+                  </div>
+                </div>
+                <div id="severityChart">
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span class="font-mono text-xs" style="color: var(--red-team)">Critical</span>
+                      <span class="font-mono text-xs" id="sevCritical">—</span>
+                    </div>
+                    <div class="helix-progress">
+                      <div class="helix-progress-bar bar-red" id="sevCriticalBar" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span class="font-mono text-xs" style="color: #f97316">High</span>
+                      <span class="font-mono text-xs" id="sevHigh">—</span>
+                    </div>
+                    <div class="helix-progress">
+                      <div class="helix-progress-bar bar-purple" id="sevHighBar" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span class="font-mono text-xs" style="color: var(--ai-gold)">Medium</span>
+                      <span class="font-mono text-xs" id="sevMedium">—</span>
+                    </div>
+                    <div class="helix-progress">
+                      <div class="helix-progress-bar bar-blue" id="sevMediumBar" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="d-flex justify-content-between mb-1">
+                      <span class="font-mono text-xs" style="color: var(--blue-accent)">Low</span>
+                      <span class="font-mono text-xs" id="sevLow">—</span>
+                    </div>
+                    <div class="helix-progress">
+                      <div class="helix-progress-bar bar-green" id="sevLowBar" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity Feed -->
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="chart-panel">
+                <div class="chart-panel-header">
+                  <div class="chart-panel-title">
+                    <i class="bi bi-activity me-2"></i>Recent Activity
+                  </div>
+                </div>
+                <div class="activity-feed" id="dashboardFeed" style="max-height: 250px;">
+                  <!-- Feed items injected by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/script.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+  </body>
+</html>

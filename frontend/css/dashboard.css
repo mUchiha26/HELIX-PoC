@@ -1,0 +1,383 @@
+/* =============================================================
+   HELIX PLATFORM — DASHBOARD.CSS
+   Dashboard shell, sidebar, and layout styles
+   ============================================================= */
+
+/* ─────────────────────────────────────────────
+   1. DASHBOARD LAYOUT
+ ───────────────────────────────────────────── */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+  background: transparent; /* Let particle canvas show through */
+}
+
+/* ─────────────────────────────────────────────
+   2. SIDEBAR
+ ───────────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  background: rgba(13, 20, 37, 0.85); /* Semi-transparent */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  transition: transform var(--transition-mid);
+}
+
+.sidebar-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-logo {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sidebar-logo .logo-bracket { color: var(--blue-accent); opacity: 0.7; }
+
+.sidebar-user {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue-accent), var(--purple-team));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Sidebar Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.nav-section {
+  margin-bottom: 1.5rem;
+}
+
+.nav-section-title {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.6rem 1.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-fast);
+  border-left: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.nav-link.active {
+  color: var(--blue-accent);
+  background: rgba(0, 212, 255, 0.05);
+  border-left-color: var(--blue-accent);
+}
+
+.nav-link i {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-link .nav-badge {
+  margin-left: auto;
+  background: var(--red-team);
+  color: white;
+  font-size: 0.6rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sidebar-footer .nav-link {
+  padding: 0.5rem 0;
+  border-left: none;
+}
+
+/* ─────────────────────────────────────────────
+   3. MAIN CONTENT
+ ───────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: transparent; /* Let particle canvas show through */
+}
+
+/* Top Bar */
+.topbar {
+  height: 56px;
+  background: rgba(13, 20, 37, 0.85); /* Semi-transparent */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar-title {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.topbar-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.topbar-breadcrumb span { color: var(--text-secondary); }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.95rem;
+  position: relative;
+}
+
+.topbar-btn:hover {
+  border-color: var(--blue-accent);
+  color: var(--blue-accent);
+}
+
+.topbar-btn .notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--red-team);
+  border-radius: 50%;
+  box-shadow: 0 0 4px var(--red-team);
+}
+
+/* Page Content */
+.page-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+/* ─────────────────────────────────────────────
+   4. DASHBOARD GRID
+ ───────────────────────────────────────────── */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1199.98px) {
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* ─────────────────────────────────────────────
+   5. CHART PANELS
+ ───────────────────────────────────────────── */
+.chart-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--panel-radius);
+  padding: 1.25rem;
+}
+
+.chart-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.chart-panel-title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.chart-placeholder {
+  height: 200px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chart-placeholder i {
+  font-size: 2rem;
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.chart-placeholder span {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────
+   6. MOBILE SIDEBAR TOGGLE
+ ───────────────────────────────────────────── */
+.sidebar-toggle {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    display: none;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+}

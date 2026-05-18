@@ -84,4 +84,65 @@ class User
         $stmt->execute();
         return $stmt->fetchAll();
     }
+
+    public static function count(): int
+    {
+        $db = Database::getInstance();
+        return (int) $db->query('SELECT COUNT(*) as count FROM users')->fetch()['count'];
+    }
+
+    public static function countByRole(): array
+    {
+        $db = Database::getInstance();
+        $stmt = $db->query(
+            'SELECT role, COUNT(*) as count FROM users GROUP BY role ORDER BY count DESC'
+        );
+        return $stmt->fetchAll();
+    }
+
+    public static function toggleActive(int $id): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare(
+            'UPDATE users SET is_active = NOT is_active WHERE id = ?'
+        );
+        return $stmt->execute([$id]);
+    }
+
+    public static function changeRole(int $id, string $role): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare(
+            'UPDATE users SET role = ? WHERE id = ?'
+        );
+        return $stmt->execute([$role, $id]);
+    }
+
+    public static function delete(int $id): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('DELETE FROM users WHERE id = ?');
+        return $stmt->execute([$id]);
+    }
+
+    public static function countActive(): int
+    {
+        $db = Database::getInstance();
+        return (int) $db->query("SELECT COUNT(*) as count FROM users WHERE is_active = 1")->fetch()['count'];
+    }
+
+    public static function countInactive(): int
+    {
+        $db = Database::getInstance();
+        return (int) $db->query("SELECT COUNT(*) as count FROM users WHERE is_active = 0")->fetch()['count'];
+    }
+
+    public static function countCreatedToday(): int
+    {
+        $db = Database::getInstance();
+        $stmt = $db->query(
+            "SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = CURDATE()"
+        );
+        return (int) $stmt->fetch()['count'];
+    }
 }

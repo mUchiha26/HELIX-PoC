@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HELIX — Register</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="stylesheet" href="css/auth.css" />
+    <link rel="stylesheet" href="css/components.css" />
+  </head>
+  <body>
+    <!-- Particle Canvas -->
+    <canvas id="helix-canvas"></canvas>
+
+    <!-- Auth Page -->
+    <div class="auth-page">
+      <div class="auth-container" data-aos="fade-up">
+        <div class="auth-card">
+          <div class="auth-card-glow"></div>
+
+          <!-- Header -->
+          <div class="auth-header">
+            <a href="/" class="auth-logo">
+              <span class="logo-bracket">[</span>
+              <span class="logo-text">HELIX</span>
+              <span class="logo-bracket">]</span>
+            </a>
+            <h1 class="auth-title">Create Operator Account</h1>
+            <p class="auth-subtitle">
+              Join the HELIX platform and start your cybersecurity journey.
+            </p>
+          </div>
+
+          <!-- Register Form -->
+          <form class="auth-form" id="registerForm" onsubmit="Auth.handleRegister(event)">
+            <div class="form-group">
+              <label class="form-label" for="regUsername">Callsign</label>
+              <input
+                type="text"
+                class="form-input"
+                id="regUsername"
+                placeholder="operator_callsign"
+                autocomplete="username"
+                required
+              />
+              <span class="form-error" id="regUsernameError"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regEmail">Email</label>
+              <input
+                type="email"
+                class="form-input"
+                id="regEmail"
+                placeholder="operator@helix.local"
+                autocomplete="email"
+                required
+              />
+              <span class="form-error" id="regEmailError"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regPassword">Password</label>
+              <input
+                type="password"
+                class="form-input"
+                id="regPassword"
+                placeholder="Min 8 characters"
+                autocomplete="new-password"
+                required
+                minlength="8"
+              />
+              <div class="password-strength" id="passwordStrength">
+                <div class="strength-bar">
+                  <div class="strength-fill" id="strengthFill"></div>
+                </div>
+                <span class="strength-label" id="strengthLabel"></span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regPasswordConfirm">Confirm Password</label>
+              <input
+                type="password"
+                class="form-input"
+                id="regPasswordConfirm"
+                placeholder="Re-enter password"
+                autocomplete="new-password"
+                required
+              />
+              <span class="form-error" id="regConfirmError"></span>
+            </div>
+
+            <div class="form-checkbox">
+              <input type="checkbox" id="agreeTerms" required />
+              <label for="agreeTerms">I agree to the platform terms of use</label>
+            </div>
+
+            <button type="submit" class="auth-btn auth-btn-primary" id="registerBtn">
+              <span class="btn-text">
+                <i class="bi bi-person-plus me-2"></i>Create Account
+              </span>
+              <div class="btn-loader"></div>
+            </button>
+          </form>
+
+          <!-- Footer -->
+          <div class="auth-footer">
+            <div class="auth-divider">
+              <span>Existing Operator</span>
+            </div>
+            <p>
+              Already registered?
+              <a href="login.html">Sign in</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/script.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      // Password strength checker
+      document.getElementById('regPassword')?.addEventListener('input', function () {
+        const val = this.value;
+        const fill = document.getElementById('strengthFill');
+        const label = document.getElementById('strengthLabel');
+
+        let score = 0;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/\d/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        fill.className = 'strength-fill';
+        label.className = 'strength-label';
+
+        if (val.length === 0) {
+          label.textContent = '';
+        } else if (score <= 1) {
+          fill.classList.add('weak');
+          label.classList.add('weak');
+          label.textContent = 'Weak';
+        } else if (score <= 2) {
+          fill.classList.add('medium');
+          label.classList.add('medium');
+          label.textContent = 'Medium';
+        } else {
+          fill.classList.add('strong');
+          label.classList.add('strong');
+          label.textContent = 'Strong';
+        }
+      });
+    </script>
+  </body>
+</html>

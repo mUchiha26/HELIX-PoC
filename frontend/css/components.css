@@ -1,0 +1,614 @@
+/* =============================================================
+   HELIX PLATFORM — COMPONENTS.CSS
+   Shared reusable component styles
+   ============================================================= */
+
+/* ─────────────────────────────────────────────
+   1. SEVERITY BADGES
+ ───────────────────────────────────────────── */
+.severity-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.severity-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.severity-critical {
+  background: rgba(224, 45, 60, 0.15);
+  color: var(--red-team);
+  border: 1px solid rgba(224, 45, 60, 0.3);
+}
+.severity-critical::before { background: var(--red-team); box-shadow: 0 0 5px var(--red-team); }
+
+.severity-high {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.severity-high::before { background: #f97316; box-shadow: 0 0 5px #f97316; }
+
+.severity-medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--ai-gold);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.severity-medium::before { background: var(--ai-gold); box-shadow: 0 0 5px var(--ai-gold); }
+
+.severity-low {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--blue-accent);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+.severity-low::before { background: var(--blue-accent); box-shadow: 0 0 5px var(--blue-accent); }
+
+.status-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-open {
+  background: rgba(224, 45, 60, 0.1);
+  color: var(--red-team);
+  border: 1px solid rgba(224, 45, 60, 0.2);
+}
+.status-investigating {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--ai-gold);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.status-resolved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* ─────────────────────────────────────────────
+   2. DATA TABLES
+ ───────────────────────────────────────────── */
+.helix-table-wrap {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--panel-radius);
+  overflow: hidden;
+}
+
+.helix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.helix-table thead {
+  background: rgba(0, 212, 255, 0.05);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.helix-table th {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.helix-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.helix-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.helix-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.helix-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.helix-table .mono {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.helix-table .actions-cell {
+  display: flex;
+  gap: 6px;
+}
+
+.helix-table .actions-cell .btn-icon {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.8rem;
+}
+
+.helix-table .actions-cell .btn-icon:hover {
+  border-color: var(--blue-accent);
+  color: var(--blue-accent);
+}
+
+/* ─────────────────────────────────────────────
+   3. METRIC CARDS
+ ───────────────────────────────────────────── */
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-radius);
+  padding: 1.25rem;
+  transition: all var(--transition-mid);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card:hover {
+  border-color: var(--border-primary);
+  transform: translateY(-3px);
+}
+
+.metric-card .metric-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.metric-card .metric-value {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.metric-card .metric-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.metric-card .metric-trend {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metric-card .metric-trend.trend-up { color: var(--red-team); }
+.metric-card .metric-trend.trend-down { color: #22c55e; }
+
+/* ─────────────────────────────────────────────
+   4. MODALS
+ ───────────────────────────────────────────── */
+.helix-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-mid);
+}
+
+.helix-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.helix-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--card-radius);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(20px);
+  transition: transform var(--transition-mid);
+}
+
+.helix-modal-overlay.active .helix-modal {
+  transform: translateY(0);
+}
+
+.helix-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.helix-modal-header h3 {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.helix-modal-close {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.helix-modal-close:hover {
+  border-color: var(--red-team);
+  color: var(--red-team);
+}
+
+.helix-modal-body {
+  padding: 1.5rem;
+}
+
+.helix-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* ─────────────────────────────────────────────
+   5. TOASTS / NOTIFICATIONS
+ ───────────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.helix-toast {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 300px;
+  max-width: 400px;
+  animation: toast-slide 0.3s ease;
+  box-shadow: var(--glow-subtle);
+}
+
+.helix-toast.toast-success { border-left: 3px solid #22c55e; }
+.helix-toast.toast-error { border-left: 3px solid var(--red-team); }
+.helix-toast.toast-warning { border-left: 3px solid var(--ai-gold); }
+.helix-toast.toast-info { border-left: 3px solid var(--blue-accent); }
+
+.helix-toast .toast-icon { font-size: 1.1rem; }
+.toast-success .toast-icon { color: #22c55e; }
+.toast-error .toast-icon { color: var(--red-team); }
+.toast-warning .toast-icon { color: var(--ai-gold); }
+.toast-info .toast-icon { color: var(--blue-accent); }
+
+.helix-toast .toast-message {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.helix-toast .toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+@keyframes toast-slide {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ─────────────────────────────────────────────
+   6. LOADER / SPINNER
+ ───────────────────────────────────────────── */
+.helix-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.loader-spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--blue-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader-text {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-left: 12px;
+}
+
+/* ─────────────────────────────────────────────
+   7. EMPTY STATES
+ ───────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.empty-state .empty-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  opacity: 0.4;
+  margin-bottom: 1rem;
+}
+
+.empty-state .empty-title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state .empty-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+/* ─────────────────────────────────────────────
+   8. FILTER BAR
+ ───────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.filter-bar .filter-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  transition: border-color var(--transition-fast);
+}
+
+.filter-bar .filter-input:focus {
+  outline: none;
+  border-color: var(--blue-accent);
+}
+
+.filter-bar .filter-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.filter-bar .filter-select:focus {
+  outline: none;
+  border-color: var(--blue-accent);
+}
+
+.filter-bar .filter-chip {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: transparent;
+}
+
+.filter-bar .filter-chip:hover,
+.filter-bar .filter-chip.active {
+  border-color: var(--blue-accent);
+  color: var(--blue-accent);
+  background: rgba(0, 212, 255, 0.07);
+}
+
+/* ─────────────────────────────────────────────
+   9. PROGRESS BARS
+ ───────────────────────────────────────────── */
+.helix-progress {
+  height: 6px;
+  background: var(--border-subtle);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.helix-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+
+.helix-progress-bar.bar-blue { background: var(--blue-accent); box-shadow: 0 0 8px var(--blue-accent); }
+.helix-progress-bar.bar-red { background: var(--red-team); box-shadow: 0 0 8px var(--red-team); }
+.helix-progress-bar.bar-purple { background: var(--purple-team); box-shadow: 0 0 8px var(--purple-team); }
+.helix-progress-bar.bar-green { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+/* ─────────────────────────────────────────────
+   10. PAGINATION
+ ───────────────────────────────────────────── */
+.helix-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 1.5rem;
+}
+
+.helix-pagination .page-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.helix-pagination .page-btn:hover,
+.helix-pagination .page-btn.active {
+  border-color: var(--blue-accent);
+  color: var(--blue-accent);
+  background: rgba(0, 212, 255, 0.07);
+}
+
+.helix-pagination .page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────
+   11. TABS
+ ───────────────────────────────────────────── */
+.helix-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 1.5rem;
+}
+
+.helix-tab {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.65rem 1.25rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.helix-tab:hover { color: var(--text-secondary); }
+
+.helix-tab.active {
+  color: var(--blue-accent);
+  border-bottom-color: var(--blue-accent);
+}
+
+/* ─────────────────────────────────────────────
+   12. ROLE-BASED NAV INDICATORS
+ ───────────────────────────────────────────── */
+.role-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+}
+
+.role-indicator.role-administrator {
+  background: rgba(224, 45, 60, 0.1);
+  color: var(--red-team);
+  border: 1px solid rgba(224, 45, 60, 0.2);
+}
+
+.role-indicator.role-blue_team {
+  background: rgba(0, 212, 255, 0.1);
+  color: var(--blue-accent);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.role-indicator.role-red_team {
+  background: rgba(224, 45, 60, 0.1);
+  color: var(--red-team);
+  border: 1px solid rgba(224, 45, 60, 0.2);
+}
+
+.role-indicator.role-purple_team {
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--purple-team);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.role-indicator.role-learner {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--ai-gold);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}

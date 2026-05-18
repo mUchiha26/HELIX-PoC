@@ -74,4 +74,3 @@ class AuthController
         Response::success($user);
     }
 }
-?>
