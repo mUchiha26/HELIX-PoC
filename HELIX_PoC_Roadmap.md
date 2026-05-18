@@ -179,8 +179,11 @@ Create `/etc/httpd/conf.d/helix.conf` (requires `sudo`):
 
     # Serve frontend at root
     <Directory /home/yasseene/HELIX/frontend>
+        #Allow symbolic links.
         Options Indexes FollowSymLinks
+        #Allow .htaccess files to override settings.
         AllowOverride All
+        #Let everyone access these files.
         Require all granted
 
         # SPA routing: send all requests to index.html except actual files

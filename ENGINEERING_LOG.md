@@ -103,3 +103,8 @@ The Difference
   Used for Non-static properties & methods Static properties & methods
   Symbol Arrow -> Double Colon ::
   Analogy "Me" "The Blueprint"
+
+The Difference Between Apache 404 and PHP 404
+
+1.  Apache 404: Happens if you ask for a file that doesn't exist on the disk (e.g., http://helix.local/nonexistent.jpg). Apache handles this before PHP even starts.
+2.  PHP 404: Happens if the file exists (index.php), but the route inside the PHP code doesn't exist (e.g., http://helix.local/api/fake-route). This is what your Response::error(..., 404) handles.

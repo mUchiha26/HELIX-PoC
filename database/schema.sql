@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS helix_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE helix_db;
+CREATE DATABASE IF NOT EXISTS helixdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE helixdb;
 
 CREATE TABLE users (
     id            INT AUTO_INCREMENT PRIMARY KEY,
