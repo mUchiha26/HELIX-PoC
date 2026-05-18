@@ -139,9 +139,9 @@ api/config/.env
 *.DS_Store
 ```
 
-- [ ] Create `CHANGELOG.md` — update at end of every phase
-- [ ] Initial commit: `git commit -m "chore: initialize HELIX project"`
-- [ ] Create `dev` branch: `git checkout -b dev`
+- [x] Create `CHANGELOG.md` — update at end of every phase
+- [x] Initial commit: `git commit -m "chore: initialize HELIX project"`
+- [x] Create `dev` branch: `git checkout -b dev`
 
 **Branching strategy:**
 
@@ -306,7 +306,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON helix_db.* TO 'helix_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-- [ ] Verify connection via phpMyAdmin
+- [x] Verify connection via phpMyAdmin
 
 #### 0.4 — PHP Composer Setup
 
@@ -338,7 +338,7 @@ FLUSH PRIVILEGES;
 
 - [x] Run: `composer install`
 - [x] Verify `vendor/autoload.php` was created
-- [ ] Add `require_once __DIR__ . '/../../vendor/autoload.php';` to `api/index.php`
+- [x] Add `require_once __DIR__ . '/../../vendor/autoload.php';` to `api/index.php`
 
 **Why PSR-4 matters:** With this config, `use App\Controllers\AuthController` automatically maps to `api/controllers/AuthController.php`. You never write manual `require` statements for your own classes.
 
@@ -447,7 +447,7 @@ class Database
 }
 ```
 
-- [ ] Test: add a `Database::getInstance();` call to `api/index.php` temporarily → no error
+- [x] Test: add a `Database::getInstance();` call to `api/index.php` temporarily → no error
 
 #### 0.7 — CORS Configuration
 
@@ -611,7 +611,7 @@ if (isset($routes[$method][$uri])) {
 }
 ```
 
-- [ ] Verify: `http://helix.local/api/nonexistent` returns `{"success":false,"error":"Route not found"}`
+- [x] Verify: `http://helix.local/api/nonexistent` returns `{"success":false,"error":"Route not found"}`
 
 #### 0.10 — Python Environment
 
