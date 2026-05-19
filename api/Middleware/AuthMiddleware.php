@@ -47,7 +47,7 @@ class AuthMiddleware
         }
     }
 
-    // ── VÉRIFICATION d'intégrité (anti-hijacking) ──
+    // ── VÉRIFICATION d'intégrité (ANTI-HIJACKING) ──
     private static function verifyFingerprint(): bool
     {
         $current_ua = $_SERVER['HTTP_USER_AGENT'] ?? '';

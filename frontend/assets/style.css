@@ -1938,3 +1938,84 @@ body {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
+
+/* ─────────────────────────────────────────────
+   16. FIM ACCESS CARD
+───────────────────────────────────────────── */
+.fim-access-card {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fim-access-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 191, 255, 0.15);
+}
+
+.fim-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.fim-card-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--blue-accent), var(--purple-team));
+}
+
+.fim-icon-wrap {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 191, 255, 0.1);
+  color: var(--blue-accent);
+  font-size: 1.75rem;
+}
+
+.fim-content {
+  flex: 1;
+}
+
+.fim-title {
+  font-family: var(--font-orbitron);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.fim-desc {
+  font-family: var(--font-rajdhani);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.fim-arrow {
+  flex-shrink: 0;
+  color: var(--blue-accent);
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.fim-access-card:hover .fim-arrow {
+  transform: translateX(6px);
+}

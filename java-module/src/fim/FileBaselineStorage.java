@@ -3,8 +3,9 @@ package fim;
 import java.io.*;
 import java.util.*;
 
-public class BaselineStore {
-    public static void save(String baselineFile, Map<String, String> baseline) throws Exception {
+public class FileBaselineStorage implements BaselineStorage {
+    @Override
+    public void save(String baselineFile, Map<String, String> baseline) throws Exception {
         try (PrintWriter out = new PrintWriter(new FileWriter(baselineFile))) {
             for (Map.Entry<String, String> entry : baseline.entrySet()) {
                 out.println(entry.getKey() + "|" + entry.getValue());
@@ -12,7 +13,13 @@ public class BaselineStore {
         }
     }
 
-    public static Map<String, String> load(String baselineFile) throws Exception {
+    @Override
+    public Map<String, String> load(String baselineFile) throws Exception {
+        File file = new File(baselineFile);
+        if (!file.exists()) {
+            throw new BaselineNotFoundException("Baseline file not found: " + baselineFile);
+        }
+
         Map<String, String> baseline = new LinkedHashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(baselineFile))) {
             String line;
