@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HELIX — File Integrity Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <style>
+      .fim-form { background: var(--bg-panel); border: 1px solid var(--border-subtle); border-radius: var(--panel-radius); padding: 1.5rem; }
+      .fim-form .form-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+      .fim-form .form-input { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 0.7rem 0.85rem; color: var(--text-primary); font-family: var(--font-body); font-size: 0.95rem; width: 100%; }
+      .fim-form .form-input:focus { outline: none; border-color: var(--blue-accent); }
+      .fim-btn { background: linear-gradient(135deg, var(--blue-accent), var(--blue-dim)); color: white; border: none; border-radius: 6px; padding: 0.75rem 1.5rem; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: all var(--transition-mid); }
+      .fim-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4); }
+      .fim-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+      .fim-changes-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem; }
+      .change-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; text-align: center; }
+      .change-card i { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+      .change-added { border-color: #22c55e; } .change-added i, .change-added span { color: #22c55e; }
+      .change-modified { border-color: var(--ai-gold); } .change-modified i, .change-modified span { color: var(--ai-gold); }
+      .change-deleted { border-color: var(--red-team); } .change-deleted i, .change-deleted span { color: var(--red-team); }
+      .change-unchanged { border-color: var(--text-muted); } .change-unchanged i, .change-unchanged span { color: var(--text-muted); }
+      .scan-progress { margin-top: 1rem; }
+      .fim-status-added { color: #22c55e; }
+      .fim-status-modified { color: var(--ai-gold); }
+      .fim-status-deleted { color: var(--red-team); }
+      .fim-status-unchanged { color: var(--text-muted); }
+    </style>
+  </head>
+  <body>
+    <canvas id="helix-canvas"></canvas>
+    <div class="dashboard-layout">
+      <div class="sidebar-overlay" id="sidebarOverlay"></div>
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><a href="/dashboard.html" class="sidebar-logo"><span class="logo-bracket">[</span><span class="logo-text">HELIX</span><span class="logo-bracket">]</span></a></div>
+        <div class="sidebar-user" id="sidebarUser" style="display:none;"><div class="user-avatar" id="sidebarAvatar"></div><div class="user-info"><div class="user-name" id="sidebarUserName"></div><span class="role-indicator" id="sidebarRole"></span></div></div>
+        <nav class="sidebar-nav">
+          <div class="nav-section"><div class="nav-section-title">Main</div><a href="/dashboard.html" class="nav-link" data-page="dashboard"><i class="bi bi-grid-3x3-gap-fill"></i> Dashboard</a><a href="/alerts.html" class="nav-link" data-page="alerts"><i class="bi bi-bell-fill"></i> Alerts <span class="nav-badge">3</span></a><a href="/logs.html" class="nav-link" data-page="logs"><i class="bi bi-journal-code"></i> Logs</a></div>
+          <div class="nav-section"><div class="nav-section-title">Intelligence</div><a href="/ai-assistant.html" class="nav-link" data-page="ai"><i class="bi bi-robot"></i> AI Assistant</a><a href="/scanner.html" class="nav-link" data-page="scanner"><i class="bi bi-crosshair"></i> Scanner</a><a href="/fim.html" class="nav-link" data-page="fim"><i class="bi bi-shield-check"></i> Integrity Monitor</a></div>
+          <div class="nav-section"><div class="nav-section-title">Administration</div><a href="/admin.html" class="nav-link" data-page="admin"><i class="bi bi-shield-lock-fill"></i> Admin</a></div>
+          <div class="nav-section"><div class="nav-section-title">Learning</div><a href="/learner.html" class="nav-link" data-page="learner"><i class="bi bi-mortarboard-fill"></i> Learner Hub</a></div>
+        </nav>
+        <div class="sidebar-footer"><a href="/profile.html" class="nav-link" data-page="profile"><i class="bi bi-person-gear"></i> Profile</a><a href="#" class="nav-link" onclick="Auth.handleLogout()"><i class="bi bi-box-arrow-left"></i> Logout</a></div>
+      </aside>
+      <main class="main-content">
+        <header class="topbar">
+          <div class="topbar-left"><button class="sidebar-toggle" id="sidebarToggle"><i class="bi bi-list"></i></button><div><div class="topbar-title">File Integrity Monitor</div><div class="topbar-breadcrumb">HELIX / <span>Blue Team Ops</span></div></div></div>
+          <div class="topbar-right"><button class="topbar-btn" id="themeToggle"><i class="bi bi-moon-stars-fill" id="themeIcon"></i></button><button class="topbar-btn"><i class="bi bi-bell"></i><span class="notif-dot"></span></button></div>
+        </header>
+        <div class="page-content">
+          <div class="row g-4">
+            <!-- Baseline Form -->
+            <div class="col-lg-4">
+              <div class="fim-form">
+                <h3 class="font-heading mb-3" style="font-family: var(--font-heading); font-size: 1rem; color: var(--text-primary);">
+                  <i class="bi bi-database-fill me-2" style="color: var(--blue-accent);"></i>Create Baseline
+                </h3>
+                <form id="baselineForm" onsubmit="handleBaseline(event)">
+                  <div class="mb-3">
+                    <label class="form-label">Target Directory</label>
+                    <input type="text" class="form-input" id="fimTarget" placeholder="/var/www/html or /etc" required />
+                  </div>
+                  <button type="submit" class="fim-btn w-100" id="baselineBtn">
+                    <i class="bi bi-camera me-2"></i>Create Baseline
+                  </button>
+                </form>
+                <div id="baselineProgress"></div>
+              </div>
+            </div>
+
+            <!-- Verify Form -->
+            <div class="col-lg-4">
+              <div class="fim-form">
+                <h3 class="font-heading mb-3" style="font-family: var(--font-heading); font-size: 1rem; color: var(--text-primary);">
+                  <i class="bi bi-shield-check me-2" style="color: var(--blue-accent);"></i>Verify Integrity
+                </h3>
+                <form id="verifyForm" onsubmit="handleVerify(event)">
+                  <div class="mb-3">
+                    <label class="form-label">Baseline ID</label>
+                    <input type="number" class="form-input" id="fimBaselineId" placeholder="1" required />
+                  </div>
+                  <button type="submit" class="fim-btn w-100" id="verifyBtn">
+                    <i class="bi bi-search me-2"></i>Run Verification
+                  </button>
+                </form>
+                <div id="verifyProgress"></div>
+              </div>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="col-lg-4">
+              <div class="fim-form">
+                <h3 class="font-heading mb-3" style="font-family: var(--font-heading); font-size: 1rem; color: var(--text-primary);">
+                  <i class="bi bi-clipboard-data me-2" style="color: var(--blue-accent);"></i>Results
+                </h3>
+                <div id="verifyResults">
+                  <div class="text-center text-muted" style="padding: 2rem 0;">
+                    <i class="bi bi-shield-exclamation" style="font-size: 2rem;"></i>
+                    <p class="mt-2 mb-0" style="font-size: 0.85rem;">Run a verification to see changes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div class="row g-4 mt-2">
+            <div class="col-12">
+              <div class="helix-table-wrap">
+                <table class="helix-table">
+                  <thead><tr><th>ID</th><th>Target Path</th><th>Files</th><th>Changes</th><th>Created At</th></tr></thead>
+                  <tbody id="historyBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <div class="toast-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/script.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/fim.js"></script>
+  </body>
+</html>

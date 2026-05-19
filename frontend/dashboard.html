@@ -50,7 +50,7 @@
         </div>
 
         <!-- User Info -->
-        <div class="sidebar-user" id="sidebarUser" style="display:none;">
+        <div class="sidebar-user" id="sidebarUser" style="display: none">
           <div class="user-avatar" id="sidebarAvatar"></div>
           <div class="user-info">
             <div class="user-name" id="sidebarUserName"></div>
@@ -84,6 +84,9 @@
             <a href="/scanner.html" class="nav-link" data-page="scanner">
               <i class="bi bi-crosshair"></i> Scanner
             </a>
+            <a href="/fim.html" class="nav-link" data-page="fim">
+              <i class="bi bi-shield-check"></i> Integrity Monitor
+            </a>
           </div>
 
           <!-- Administration -->
@@ -108,7 +111,12 @@
           <a href="/profile.html" class="nav-link" data-page="profile">
             <i class="bi bi-person-gear"></i> Profile
           </a>
-          <a href="#" class="nav-link" id="logoutBtn" onclick="Auth.handleLogout()">
+          <a
+            href="#"
+            class="nav-link"
+            id="logoutBtn"
+            onclick="Auth.handleLogout()"
+          >
             <i class="bi bi-box-arrow-left"></i> Logout
           </a>
         </div>
@@ -124,9 +132,7 @@
             </button>
             <div>
               <div class="topbar-title">Dashboard</div>
-              <div class="topbar-breadcrumb">
-                HELIX / <span>Overview</span>
-              </div>
+              <div class="topbar-breadcrumb">HELIX / <span>Overview</span></div>
             </div>
           </div>
           <div class="topbar-right">
@@ -187,7 +193,8 @@
               <div class="chart-panel">
                 <div class="chart-panel-header">
                   <div class="chart-panel-title">
-                    <i class="bi bi-graph-up-arrow me-2"></i>Alert Trend — Last 7 Days
+                    <i class="bi bi-graph-up-arrow me-2"></i>Alert Trend — Last
+                    7 Days
                   </div>
                 </div>
                 <div class="chart-placeholder" id="trendChart">
@@ -202,44 +209,75 @@
               <div class="chart-panel">
                 <div class="chart-panel-header">
                   <div class="chart-panel-title">
-                    <i class="bi bi-pie-chart-fill me-2"></i>Severity Distribution
+                    <i class="bi bi-pie-chart-fill me-2"></i>Severity
+                    Distribution
                   </div>
                 </div>
                 <div id="severityChart">
                   <div class="mb-3">
                     <div class="d-flex justify-content-between mb-1">
-                      <span class="font-mono text-xs" style="color: var(--red-team)">Critical</span>
+                      <span
+                        class="font-mono text-xs"
+                        style="color: var(--red-team)"
+                        >Critical</span
+                      >
                       <span class="font-mono text-xs" id="sevCritical">—</span>
                     </div>
                     <div class="helix-progress">
-                      <div class="helix-progress-bar bar-red" id="sevCriticalBar" style="width: 0%"></div>
+                      <div
+                        class="helix-progress-bar bar-red"
+                        id="sevCriticalBar"
+                        style="width: 0%"
+                      ></div>
                     </div>
                   </div>
                   <div class="mb-3">
                     <div class="d-flex justify-content-between mb-1">
-                      <span class="font-mono text-xs" style="color: #f97316">High</span>
+                      <span class="font-mono text-xs" style="color: #f97316"
+                        >High</span
+                      >
                       <span class="font-mono text-xs" id="sevHigh">—</span>
                     </div>
                     <div class="helix-progress">
-                      <div class="helix-progress-bar bar-purple" id="sevHighBar" style="width: 0%"></div>
+                      <div
+                        class="helix-progress-bar bar-purple"
+                        id="sevHighBar"
+                        style="width: 0%"
+                      ></div>
                     </div>
                   </div>
                   <div class="mb-3">
                     <div class="d-flex justify-content-between mb-1">
-                      <span class="font-mono text-xs" style="color: var(--ai-gold)">Medium</span>
+                      <span
+                        class="font-mono text-xs"
+                        style="color: var(--ai-gold)"
+                        >Medium</span
+                      >
                       <span class="font-mono text-xs" id="sevMedium">—</span>
                     </div>
                     <div class="helix-progress">
-                      <div class="helix-progress-bar bar-blue" id="sevMediumBar" style="width: 0%"></div>
+                      <div
+                        class="helix-progress-bar bar-blue"
+                        id="sevMediumBar"
+                        style="width: 0%"
+                      ></div>
                     </div>
                   </div>
                   <div>
                     <div class="d-flex justify-content-between mb-1">
-                      <span class="font-mono text-xs" style="color: var(--blue-accent)">Low</span>
+                      <span
+                        class="font-mono text-xs"
+                        style="color: var(--blue-accent)"
+                        >Low</span
+                      >
                       <span class="font-mono text-xs" id="sevLow">—</span>
                     </div>
                     <div class="helix-progress">
-                      <div class="helix-progress-bar bar-green" id="sevLowBar" style="width: 0%"></div>
+                      <div
+                        class="helix-progress-bar bar-green"
+                        id="sevLowBar"
+                        style="width: 0%"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -256,7 +294,11 @@
                     <i class="bi bi-activity me-2"></i>Recent Activity
                   </div>
                 </div>
-                <div class="activity-feed" id="dashboardFeed" style="max-height: 250px;">
+                <div
+                  class="activity-feed"
+                  id="dashboardFeed"
+                  style="max-height: 250px"
+                >
                   <!-- Feed items injected by JS -->
                 </div>
               </div>

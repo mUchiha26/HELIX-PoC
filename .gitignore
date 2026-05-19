@@ -9,7 +9,8 @@ __pycache__/
 *.pyc
 
 # Java
-java - module / build /*. class
+build/
+*.dat
 
 # Environment
 *.env

@@ -25,6 +25,7 @@ use App\Controllers\AuthController;
 use App\Controllers\AIController;
 use App\Controllers\DashboardController;
 use App\Controllers\UserController;
+use App\Controllers\FIMController;
 
 // 4. Route dispatch — exact matches first
 $routes = [];
@@ -49,6 +50,12 @@ $routes['GET']['/users/{id}']          = [UserController::class, 'show'];
 $routes['PUT']['/users/{id}/role']     = [UserController::class, 'changeRole'];
 $routes['POST']['/users/{id}/toggle']  = [UserController::class, 'toggleActive'];
 $routes['DELETE']['/users/{id}']       = [UserController::class, 'delete'];
+
+// FIM routes
+$routes['POST']['/fim/baseline']  = [FIMController::class, 'baseline'];
+$routes['POST']['/fim/verify']    = [FIMController::class, 'verify'];
+$routes['GET']['/fim/history']    = [FIMController::class, 'history'];
+$routes['POST']['/fim/results']   = [FIMController::class, 'results'];
 
 // 5. Dispatch — exact match first
 if (isset($routes[$method][$uri])) {
