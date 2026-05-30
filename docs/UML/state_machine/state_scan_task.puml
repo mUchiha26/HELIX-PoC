@@ -1,5 +1,5 @@
 @startuml state_scan_task
-title HELIX Platform – ScanTask State Machine
+title HELIX Platform – Scan Task State Machine
 
 skinparam shadowing false
 skinparam linetype ortho

@@ -186,6 +186,7 @@ are grouped with their parent for conciseness.
         A5 & Visitor & Unauthenticated user; browses public content, registers, logs in \\
         A6 & Learner & Authenticated student; studies, tracks progress, takes notes \\
         A7 & Detection Engine & Autonomous system actor; runs the detection pipeline \\
+        A8 & AI Service & Internal system actor; provides OpenAI-powered responses \\
         \bottomrule
     \end{tabular}
 \end{center}
@@ -200,6 +201,7 @@ are grouped with their parent for conciseness.
     \item Collaboration \& Knowledge Base (UC-21 to UC-26)
     \item Learner Workspace (UC-27 to UC-30)
     \item AI Assistance (UC-31 to UC-33)
+    \item File Integrity Monitoring (UC-34 to UC-36)
 \end{enumerate}
 
 % ══════════════════════════════════════════════════════════════════════════
@@ -208,7 +210,7 @@ are grouped with their parent for conciseness.
 \clearpage
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{usecase_detailed.png}
+    \includegraphics[width=\textwidth]{usecase.png}
     \caption{HELIX Platform – Use Case Diagram (Comprehensive)}
     \label{fig:usecase_detailed}
 \end{figure}
@@ -424,9 +426,10 @@ are grouped with their parent for conciseness.
 % ══════════════════════════════════════════════════════════════════════════
 \chapter{Detection Pipeline}
 
-The Detection Engine pipeline is a chain of \texttt{<<include>>} relationships:
-UC-11 (Automated Detection) includes UC-15 (Generate Alerts) $\rightarrow$ UC-14 (Score Anomalies) $\rightarrow$ UC-13 (Pre-filter Noise) $\rightarrow$ UC-12 (Ingest Logs).
-UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assistant).
+The Detection Engine pipeline is a sequential chain of \texttt{<<include>>} relationships:
+UC-11 (Automated Detection) \texttt{<<include>>} UC-12 (Ingest Logs) $\rightarrow$ UC-13 (Pre-filter Noise) $\rightarrow$
+UC-14 (Score Anomalies) $\rightarrow$ UC-15 (Generate Alerts).
+UC-14 also includes UC-16 (Use ML Scoring).
 
 \section{UC-11 -- Automated Detection}
 \begin{ucbox}{UC-11 \quad Automated Detection}
@@ -438,11 +441,10 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
     \begin{enumerate}
         \item Detection Engine triggered by scheduler or event stream.
         \item \texttt{<<include>>} UC-12 -- Ingest Logs.
-        \item \texttt{<<include>>} UC-13 -- Pre-filter Noise.
-        \item \texttt{<<include>>} UC-14 -- Score Anomalies (includes UC-16).
-        \item \texttt{<<include>>} UC-15 -- Generate Alerts for HIGH/CRITICAL.
-        \item \texttt{<<include>>} UC-31 -- Use AI Assistant for enrichment.
-        \item System notifies assigned analysts.
+        \item \texttt{<<include>>} UC-13 -- Pre-filter Noise (processes ingested entries).
+        \item \texttt{<<include>>} UC-14 -- Score Anomalies (includes UC-16 ML Scoring).
+        \item \texttt{<<include>>} UC-15 -- Generate Alerts for HIGH/CRITICAL events.
+        \item System notifies assigned analysts of critical alerts.
     \end{enumerate}
     \textbf{\color{helixpurplemid}Alternatives:}
     \begin{itemize}
@@ -835,7 +837,7 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
         \item User opens the AI Assistant panel (from alert, incident, or freeform chat).
         \item System constructs a prompt with alert context and relevant log data.
         \item \texttt{<<include>>} UC-32 -- Provide Reliable Fixes.
-        \item \texttt{<<include>>} UC-33 -- Suggest Attack Methods.
+        \item \texttt{<<extend>>} UC-33 -- Suggest Attack Methods (Red/Purple Team only).
         \item AI response displayed; conversation history persisted per session.
     \end{enumerate}
     \textbf{\color{helixpurplemid}Alternatives:}
@@ -863,19 +865,86 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \end{ucbox}
 
 \section{UC-33 -- Suggest Attack Methods}
-\begin{ucbox}{UC-33 \quad Suggest Attack Methods \textnormal{(included by UC-31)}}
+\begin{ucbox}{UC-33 \quad Suggest Attack Methods \textnormal{(\texttt{<<extend>>} UC-31)}}
     \ucfield{Actors}{AI Service (internal)}
     \ucphase{PoC}
-    \ucfield{Preconditions}{UC-31 initiated; Red Team or Purple Team context detected.}
+    \ucfield{Preconditions}{UC-31 initiated; Red Team or Purple Team role detected.}
     \ucfield{Postconditions}{Relevant attack techniques returned.}
     \textbf{\color{helixpurplemid}Main Scenario:}
     \begin{enumerate}
+        \item System detects user role is Red Team or Purple Team.
+        \item \texttt{<<extend>>} condition met: AI includes attack technique suggestions.
         \item OpenAI API identifies the attack surface or target technology from context.
         \item System returns relevant attack techniques, tools, and exploitation paths.
     \end{enumerate}
     \textbf{\color{helixpurplemid}Alternatives:}
     \begin{itemize}
         \item \textbf{[Alt-A]} Legal consent not accepted $\rightarrow$ output blocked with consent prompt.
+        \item \textbf{[Alt-B]} User role is not Red/Purple $\rightarrow$ attack suggestions omitted.
+    \end{itemize}
+\end{ucbox}
+
+% ══════════════════════════════════════════════════════════════════════════
+% CHAPTER 8 – FILE INTEGRITY MONITORING
+% ══════════════════════════════════════════════════════════════════════════
+\chapter{File Integrity Monitoring}
+
+\section{UC-34 -- Create Baseline}
+\begin{ucbox}{UC-34 \quad Create Baseline}
+    \ucfield{Actors}{Blue Team Operator (primary), Purple Team Operator, Administrator}
+    \ucphase{PoC}
+    \ucfield{Preconditions}{User authenticated with appropriate role. Target directory path is valid.}
+    \ucfield{Postconditions}{Baseline hash snapshot computed and stored for future verification.}
+    \textbf{\color{helixpurplemid}Main Scenario:}
+    \begin{enumerate}
+        \item Operator specifies the target directory path for monitoring.
+        \item System invokes the Java module via \texttt{shell\_exec()} to compute SHA-256 hashes.
+        \item Baseline record created with file count and hash data.
+        \item System confirms baseline creation and displays summary.
+    \end{enumerate}
+    \textbf{\color{helixpurplemid}Alternatives:}
+    \begin{itemize}
+        \item \textbf{[Alt-A]} Invalid directory path $\rightarrow$ validation error returned.
+        \item \textbf{[Alt-B]} Java module unavailable $\rightarrow$ error logged; operator notified.
+    \end{itemize}
+\end{ucbox}
+
+\section{UC-35 -- Verify Integrity}
+\begin{ucbox}{UC-35 \quad Verify Integrity \textnormal{(\texttt{<<extend>>} UC-34)}}
+    \ucfield{Actors}{Blue Team Operator (primary), Purple Team Operator, Administrator}
+    \ucphase{PoC}
+    \ucfield{Preconditions}{Baseline exists for the target path.}
+    \ucfield{Postconditions}{Scan results showing added, modified, deleted, or unchanged files.}
+    \textbf{\color{helixpurplemid}Main Scenario:}
+    \begin{enumerate}
+        \item Operator selects an existing baseline to verify.
+        \item System re-computes SHA-256 hashes for the current file state.
+        \item System compares against stored baseline and categorises changes.
+        \item Results displayed with file paths and change status.
+    \end{enumerate}
+    \textbf{\color{helixpurplemid}Alternatives:}
+    \begin{itemize}
+        \item \textbf{[Alt-A]} Baseline not found $\rightarrow$ error returned; create baseline first.
+        \item \textbf{[Alt-B]} New files detected $\rightarrow$ flagged as \texttt{added}.
+        \item \textbf{[Alt-C]} Files missing $\rightarrow$ flagged as \texttt{deleted}.
+    \end{itemize}
+\end{ucbox}
+
+\section{UC-36 -- View Scan History}
+\begin{ucbox}{UC-36 \quad View Scan History}
+    \ucfield{Actors}{Blue Team Operator (primary), Purple Team Operator, Administrator}
+    \ucphase{PoC}
+    \ucfield{Preconditions}{User authenticated. At least one baseline or scan exists.}
+    \ucfield{Postconditions}{Historical scan results displayed; no state change.}
+    \textbf{\color{helixpurplemid}Main Scenario:}
+    \begin{enumerate}
+        \item Operator navigates to the FIM history view.
+        \item System lists all baselines and associated scans for the user.
+        \item Operator selects a specific scan to view detailed results.
+    \end{enumerate}
+    \textbf{\color{helixpurplemid}Alternatives:}
+    \begin{itemize}
+        \item \textbf{[Alt-A]} No history exists $\rightarrow$ empty state with guidance to create baseline.
     \end{itemize}
 \end{ucbox}
 
@@ -886,12 +955,14 @@ UC-14 also includes UC-16 (Use ML Scoring). UC-11 includes UC-31 (Use AI Assista
 \addcontentsline{toc}{chapter}{Conclusion}
 
 \begin{successbox}[title=Summary]
-    This document provides complete textual descriptions for all \textbf{33 use cases}
-    (UC-01 to UC-33) of the HELIX platform, fully aligned with the SRS and Use Case Diagram.
+    This document provides complete textual descriptions for all \textbf{36 use cases}
+    (UC-01 to UC-36) of the HELIX platform, fully aligned with the SRS and Use Case Diagram.
     All descriptions follow the academic format: \textit{Name, Actors, Preconditions,
-    Postconditions, Main Scenario, and Alternative Scenarios}. The eight actors
+    Postconditions, Main Scenario, and Alternative Scenarios}. The actors
     (Authenticated User, Administrator, Blue Team Operator, Red Team Operator,
-    Purple Team Operator, Visitor, Learner, Detection Engine) are consistently applied.
+    Purple Team Operator, Visitor, Learner, Detection Engine, AI Service) are consistently applied.
+    Use case relationships use \texttt{<<include>>} for mandatory sub-flows and
+    \texttt{<<extend>>} for conditional extensions.
 \end{successbox}
 
 \end{document}

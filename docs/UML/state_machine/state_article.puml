@@ -34,7 +34,15 @@ state PUBLISHED {
     note right: Article live and\nsearchable (UC-22)\nVisible to all authenticated users\nIndexed in knowledge base
 }
 
-PUBLISHED --> [*] : Final state
+PUBLISHED --> ARCHIVED : Admin archives\npublished article
+
+state ARCHIVED {
+    note right: Article removed from\nsearch results\nContent preserved for\nhistorical reference
+}
+
+ARCHIVED --> PUBLISHED : Admin restores\nfrom archive
+
+PUBLISHED --> [*] : Final state (deletion)
 
 PENDING --> REJECTED : Admin rejects\nwith reason
 
@@ -45,14 +53,6 @@ state REJECTED {
 REJECTED --> DRAFT : Author revises\nbased on feedback
 
 DRAFT --> PENDING : Author resubmits\nfor moderation
-
-PUBLISHED --> ARCHIVED : Admin archives\npublished article
-
-state ARCHIVED {
-    note right: Article removed from\nsearch results\nContent preserved for\nhistorical reference
-}
-
-ARCHIVED --> [*] : Final state
 
 note bottom of DRAFT
     Entry: Set status='draft',

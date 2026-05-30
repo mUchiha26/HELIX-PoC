@@ -1,6 +1,6 @@
 @startuml class
-title HELIX Platform – Class Diagram (Aligned with db/schema.sql)
-'left to right direction
+title HELIX Platform – Class Diagram (Aligned with db/schema.sql and migrations)
+
 skinparam classAttributeIconSize 8
 skinparam shadowing false
 skinparam roundcorner 8
@@ -154,7 +154,44 @@ package "Red Team" #FFE0E6 {
     }
 }
 ' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 4: AI ASSISTANCE
+' PACKAGE 4: FILE INTEGRITY MONITORING
+' ══════════════════════════════════════════════════════════════════════════
+package "File Integrity Monitoring" #FFECD2 {
+    class "FIMBaseline (PoC)" <<Entity>> {
+        - id: INT
+        - target_path: VARCHAR(512)
+        - baseline_data: TEXT
+        - file_count: INT
+        - created_by: INT
+        - created_at: TIMESTAMP
+        --
+        + create(path): void
+        + load(): Map
+    }
+    class "FIMScanResult (PoC)" <<Entity>> {
+        - id: INT
+        - baseline_id: INT
+        - file_path: VARCHAR(512)
+        - sha256: VARCHAR(64)
+        - file_size: BIGINT
+        - status: ENUM(added, modified, deleted, unchanged)
+        - scanned_at: TIMESTAMP
+        --
+        + getChanges(): List
+    }
+    class "FileIntegrityMonitor (PoC)" <<Service>> {
+        - java_module_path: String
+        --
+        + computeBaseline(path): Map
+        + verifyIntegrity(baselineId): List
+        + getHistory(userId): List
+    }
+    "FIMBaseline (PoC)" "1" --> "0..*" "FIMScanResult (PoC)" : verified by >
+    "FileIntegrityMonitor (PoC)" ..> "FIMBaseline (PoC)" : manages >
+    "User (PoC)" "1" --> "0..*" "FIMBaseline (PoC)" : creates (created_by) >
+}
+' ══════════════════════════════════════════════════════════════════════════
+' PACKAGE 5: AI ASSISTANCE
 ' ══════════════════════════════════════════════════════════════════════════
 package "AI Assistance" #D4F5D6 {
     class "ChatSession (PoC)" <<Entity>> {
@@ -166,7 +203,7 @@ package "AI Assistance" #D4F5D6 {
         - sent_at: TIMESTAMP
         --
         + sendMessage(role, content): void
-        + getHistory(): List<ChatSession>
+        + getHistory(): List
     }
     class "AIService (PoC)" <<Service>> {
         - api_key: String
@@ -178,9 +215,10 @@ package "AI Assistance" #D4F5D6 {
         + suggestRemediation(alert): String
     }
     "ChatSession (PoC)" "1" ..> "1" "AIService (PoC)" : uses >
+    "User (PoC)" "1" --> "0..*" "ChatSession (PoC)" : initiates (user_id) >
 }
 ' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 5: INCIDENT MANAGEMENT
+' PACKAGE 6: INCIDENT MANAGEMENT
 ' ══════════════════════════════════════════════════════════════════════════
 package "Incident Management" #E8F4FD {
     class "Incident (Future MVP)" <<Entity>> {
@@ -220,7 +258,7 @@ package "Incident Management" #E8F4FD {
     "Incident (Future MVP)" "1" --> "0..*" "Report (Future MVP)" : generates >
 }
 ' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 6: KNOWLEDGE BASE
+' PACKAGE 7: KNOWLEDGE BASE
 ' ══════════════════════════════════════════════════════════════════════════
 package "Knowledge Base" #F0E6FF {
     class "Article (Future MVP)" <<Entity>> {
@@ -234,6 +272,7 @@ package "Knowledge Base" #F0E6FF {
         --
         + submit(): void
         + approve(): void
+        + archive(): void
     }
     class "Tag (Future MVP)" <<Entity>> {
         - id: INT
@@ -243,7 +282,7 @@ package "Knowledge Base" #F0E6FF {
     "Article (Future MVP)" "*" --> "*" "Tag (Future MVP)" : tagged with >
 }
 ' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 7: LEARNER WORKSPACE
+' PACKAGE 8: LEARNER WORKSPACE
 ' ══════════════════════════════════════════════════════════════════════════
 package "Learner Workspace" #FFF8DC {
     class "PersonalNote (Future MVP)" <<Entity>> {
@@ -278,7 +317,7 @@ package "Learner Workspace" #FFF8DC {
     }
 }
 ' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 8: SERVICES
+' PACKAGE 9: SERVICES
 ' ══════════════════════════════════════════════════════════════════════════
 package "Services" {
     class "DashboardService (PoC)" <<Service>> {
@@ -301,7 +340,6 @@ package "Services" {
 "User (PoC)" "1" --> "0..*" "LogEntry (PoC)" : ingests (ingested_by) >
 "User (PoC)" "1" --> "0..*" "Alert (PoC)" : assigned to (assigned_to) >
 "User (PoC)" "1" --> "0..*" "Incident (Future MVP)" : assigned to >
-"User (PoC)" "1" --> "0..*" "ChatSession (PoC)" : initiates (user_id) >
 "User (PoC)" "1" --> "0..*" "ScanResult (PoC)" : performs (performed_by) >
 "User (PoC)" "1" --> "0..*" "Article (Future MVP)" : authors >
 "User (PoC)" "1" --> "0..*" "Writeup (Future MVP)" : creates >
@@ -329,6 +367,17 @@ note right of "AIService (PoC)"
   PoC: OpenAI API integration
   Context-aware prompt engineering
   Session-bound conversation history
+end note
+note right of "ChatSession (PoC)"
+  Denormalized schema: each row
+  stores a single message with
+  role (user/assistant) and content.
+  session_id groups messages by conversation.
+end note
+note right of "FileIntegrityMonitor (PoC)"
+  Invokes Java module via
+  shell_exec() for SHA-256
+  hashing and file scanning.
 end note
 note bottom of "DetectionRule (Future MVP)"
   Future MVP: Rule engine with

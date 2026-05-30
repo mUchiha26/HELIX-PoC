@@ -1,0 +1,194 @@
+@startuml usecase
+title HELIX Platform – Use Case Diagram (Comprehensive)
+left to right direction
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam roundcorner 12
+skinparam packageStyle rectangle
+skinparam nodesep 24
+skinparam ranksep 30
+skinparam dpi 160
+skinparam defaultTextAlignment center
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #3C3489
+skinparam usecaseFontColor #1E1E1C
+skinparam actorBorderColor #0F6E56
+skinparam actorFontColor #1E1E1C
+skinparam packageBorderColor #CCCAC0
+skinparam packageBackgroundColor #F8F7F4
+skinparam ArrowColor #5A50B0
+
+' ============================================
+' PRIMARY ACTORS (roles)
+' ============================================
+actor "Visitor" as Visitor
+actor "Authenticated User" as AuthUser
+actor "Administrator" as Admin #c5c5ca
+actor "Blue Team Operator" as Blue #0d0ca9
+actor "Red Team Operator" as Red #b71717
+actor "Purple Team Operator" as Purple #8d2cd2
+actor "Learner" as Learner
+
+' Actor inheritance – explicit and maintainable
+Admin --|> AuthUser
+Blue --|> AuthUser
+Red --|> AuthUser
+Purple --|> Blue
+Purple --|> Red
+Learner --|> AuthUser
+
+note top of Purple
+  Inherits all Blue and Red
+  capabilities
+end note
+
+' ============================================
+' SYSTEM BOUNDARY
+' ============================================
+rectangle "HELIX Platform" as System {
+
+    package "Access Control"  {
+        usecase "(UC-01) Register Account" as UC_Register
+        usecase "(UC-02) Log In" as UC_Login
+        usecase "(UC-03) Manage Profile" as UC_Profile
+        usecase "(UC-04) Manage Users" as UC_ManageUsers
+        usecase "(UC-05) Configure System" as UC_Configure
+        usecase "(UC-06) Subscribe" as UC_Subscribe
+    }
+
+    package "Security Operations" #E8F4FD {
+        usecase "(UC-07) View Security Dashboard" as UC_SecurityDashboard #E8F4FD
+        usecase "(UC-08) Monitor Security Events" as UC_Monitor #E8F4FD
+        usecase "(UC-09) Manage Incidents" as UC_Incidents #E8F4FD
+        usecase "(UC-10) Generate Report" as UC_Report #E8F4FD
+    }
+
+    package "Detection Pipeline"  {
+        usecase "(UC-11) Automated Detection" as UC_AutoDetection
+        usecase "(UC-12) Ingest Logs" as UC_IngestLogs
+        usecase "(UC-13) Pre-filter Noise" as UC_PreFilter
+        usecase "(UC-14) Score Anomalies" as UC_ScoreAnomalies
+        usecase "(UC-15) Generate Alerts" as UC_GenerateAlerts
+        usecase "(UC-16) Use ML Scoring" as UC_MLScoring
+    }
+
+    package "File Integrity Monitoring" #FFECD2 {
+        usecase "(UC-34) Create Baseline" as UC_CreateBaseline #FFECD2
+        usecase "(UC-35) Verify Integrity" as UC_VerifyIntegrity #FFECD2
+        usecase "(UC-36) View Scan History" as UC_ScanHistory #FFECD2
+    }
+
+    package "Red Team Orchestration" #FFE0E6 {
+        usecase "(UC-17) Run Reconnaissance" as UC_Recon #FFE0E6
+        usecase "(UC-18) Launch Exploitation" as UC_Exploit #FFE0E6
+        usecase "(UC-19) Post-Exploitation Lab" as UC_Post #FFE0E6
+        usecase "(UC-20) Create a Writeup" as UC_Writeup #FFE0E6
+    }
+
+    package "Collaboration & Knowledge Base" #F0E6FF {
+        usecase "(UC-21) Browse Public Content" as UC_PublicContent #F0E6FF
+        usecase "(UC-22) Search Knowledge Base" as UC_SearchKB #F0E6FF
+        usecase "(UC-23) Publish Article" as UC_Publish #F0E6FF
+        usecase "(UC-24) Collaborate on Incidents" as UC_Collaborate #F0E6FF
+        usecase "(UC-25) Share Findings" as UC_Share #F0E6FF
+        usecase "(UC-26) Moderate Knowledge Base" as UC_ModerateKB #F0E6FF
+    }
+
+    package "Learner Workspace" #FFF8DC {
+        usecase "(UC-27) Study with Premium Materials" as UC_Study #FFF3DC
+        usecase "(UC-28) Manage Personal Notes" as UC_Notes #FFF3DC
+        usecase "(UC-29) Track Progress" as UC_Progress #FFF3DC
+        usecase "(UC-30) Participate in Events" as UC_Events #FFF3DC
+    }
+
+    package "AI Assistance" #D4F5D6 {
+        usecase "(UC-31) Use AI Assistant" as UC_AI #D4F5D6
+        usecase "(UC-32) Provide Reliable Fixes" as UC_ProvideFixes #D4F5D6
+        usecase "(UC-33) Suggest Attack Methods" as UC_SuggestAttacks #D4F5D6
+    }
+
+    ' ============================================
+    ' USE CASE RELATIONSHIPS
+    ' ============================================
+    ' -- Study & Progress
+    UC_Study ..> UC_Progress : <<include>>
+    UC_Notes ..> UC_Study : <<extend>>
+
+    ' -- AI Assistant includes mandatory fix guidance;
+    '    attack suggestions are conditional (Red/Purple only)
+    UC_AI ..> UC_ProvideFixes : <<include>>
+    UC_AI ..> UC_SuggestAttacks : <<extend>>
+    note right of UC_SuggestAttacks
+      Only activated for Red Team
+      and Purple Team roles
+    end note
+
+    ' -- Detection pipeline: top-down execution flow
+    '    AutoDetection triggers the full pipeline sequentially
+    UC_AutoDetection ..> UC_IngestLogs : <<include>>
+    UC_IngestLogs ..> UC_PreFilter : <<include>>
+    UC_PreFilter ..> UC_ScoreAnomalies : <<include>>
+    UC_ScoreAnomalies ..> UC_GenerateAlerts : <<include>>
+    UC_ScoreAnomalies ..> UC_MLScoring : <<include>>
+
+    ' -- FIM sub-flow
+    UC_VerifyIntegrity ..> UC_CreateBaseline : <<extend>>
+}
+
+' ============================================
+' SECONDARY ACTOR
+' ============================================
+actor "Detection Engine" as Engine <<system>>
+note right of Engine
+  Scheduled / event-triggered
+  autonomous pipeline runner
+end note
+
+' ============================================
+' ACTOR – USE CASE LINKS (primary actors)
+' ============================================
+Visitor --> UC_Register
+Visitor --> UC_Login
+Visitor --> UC_PublicContent
+
+AuthUser --> UC_Login
+AuthUser --> UC_Profile
+AuthUser --> UC_SearchKB
+AuthUser --> UC_Publish
+AuthUser --> UC_AI
+AuthUser --> UC_Subscribe
+
+Admin --> UC_ManageUsers
+Admin --> UC_Configure
+Admin --> UC_SecurityDashboard
+Admin --> UC_ModerateKB
+Admin --> UC_Report
+
+Blue --> UC_SecurityDashboard
+Blue --> UC_Monitor
+Blue --> UC_Incidents
+Blue --> UC_Report
+Blue --> UC_CreateBaseline
+Blue --> UC_VerifyIntegrity
+Blue --> UC_ScanHistory
+
+Red --> UC_Recon
+Red --> UC_Post
+Red --> UC_Writeup
+Red --> UC_Exploit
+
+Purple --> UC_Collaborate
+Purple --> UC_Share
+Purple --> UC_CreateBaseline
+Purple --> UC_VerifyIntegrity
+Purple --> UC_ScanHistory
+' (inherits Blue and Red access – shown via generalization)
+
+Learner --> UC_Study
+Learner --> UC_Events
+
+' Engine triggers the top-level automated detection use case
+Engine --> UC_AutoDetection
+
+@enduml

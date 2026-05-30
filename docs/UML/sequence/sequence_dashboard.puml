@@ -61,17 +61,17 @@ activate db
 db --> model : 24-hour timeline data
 deactivate db
 
-model -> db : SELECT COUNT(*) FROM incidents\nWHERE status != 'resolved'\nAND status != 'closed'
+model -> db : SELECT COUNT(*) FROM alerts\nWHERE status = 'open'\nOR status = 'investigating'
 activate db
-db --> model : open_incidents_count
+db --> model : open_alerts_count
 deactivate db
 
-model -> db : SELECT AVG(anomaly_score) as avg_score,\nMAX(anomaly_score) as max_score\nFROM log_entries\nWHERE created_at >= NOW() - INTERVAL 1 HOUR
+model -> db : SELECT AVG(score) as avg_score,\nMAX(score) as max_score\nFROM anomaly_scores\nWHERE computed_at >= NOW() - INTERVAL 1 HOUR
 activate db
 db --> model : ML score summary
 deactivate db
 
-model -> model : Aggregate metrics:\n{alerts_by_severity, timeline, open_incidents, ml_summary}
+model -> model : Aggregate metrics:\n{alerts_by_severity, timeline, open_alerts_count, ml_summary}
 
 alt Role = Blue Team / Purple Team / Admin
     model -> model : Include operational metrics:\nalert response times, escalation rates
@@ -84,11 +84,11 @@ end
 model --> ctrl : DashboardMetrics DTO
 deactivate model
 
-ctrl --> view : 200 OK\n{alerts_by_severity: {critical, high, medium, low},\ntimeline: [{date, count}],\nopen_incidents: N,\nml_summary: {avg_score, max_score},\nrole_specific_data: {...}}
+ctrl --> view : 200 OK\n{alerts_by_severity: {critical, high, medium, low},\ntimeline: [{date, count}],\nopen_alerts_count: N,\nml_summary: {avg_score, max_score},\nrole_specific_data: {...}}
 deactivate ctrl
 
 alt Data exists
-    view --> user : Render dashboard with:\n- Severity donut chart\n- 24-hour event timeline\n- Open incident counter\n- ML anomaly score gauge\n- Role-specific widgets
+    view --> user : Render dashboard with:\n- Severity donut chart\n- 24-hour event timeline\n- Open alerts counter\n- ML anomaly score gauge\n- Role-specific widgets
 else No events exist
     view --> user : Render empty state with guidance:\n"No security events detected.\nConfigure log sources to begin monitoring."
 end

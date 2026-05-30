@@ -1,0 +1,73 @@
+@startuml activity_detection_pipeline
+title HELIX Platform – Detection Pipeline Activity Diagram (UC-11 → UC-15)
+
+skinparam shadowing false
+skinparam activityBorderColor #3C3489
+skinparam activityBackgroundColor #FFFFFF
+skinparam activityFontColor #1E1E1C
+skinparam arrowColor #5A50B0
+skinparam noteBackgroundColor #F8F7F4
+skinparam noteBorderColor #CCCAC0
+
+start
+
+:Scheduled trigger\n(every 5 minutes);
+
+:Detection Engine
+starts cycle;
+
+partition "UC-12: Ingest Logs" {
+    :Fetch raw logs\n(Syslog, JSON, Apache, WinEvent);
+    while (For each log entry)
+        :Select format parser;
+        if (Format recognised?) then (yes)
+            :Parse and normalise\ninto structured fields;
+            :Write to staging store;
+        else (no)
+            :Tag as unparseable;\nFlag for manual review;
+        endif
+    endwhile
+}
+
+partition "UC-13: Pre-filter Noise" {
+    :Read unprocessed entries\nfrom staging;
+    while (For each entry)
+        :Evaluate noise rules\n(duplicate suppression,\nbenign pattern matching);
+        if (Duplicate or benign?) then (yes)
+            :Discard entry;\nLog suppression reason;
+        else (no)
+            :Forward to\nscoring stage;
+        endif
+    endwhile
+}
+
+partition "UC-14 / UC-16: Score Anomalies" {
+    if (ML model available?) then (yes)
+        :Build feature vectors;\n(event_frequency, error_rate,\ntime_of_day, ip_diversity);
+        :Invoke Isolation Forest\n(Python via exec());
+        :Map anomaly scores\nto severity labels;
+    else (no)
+        :Apply rule-based\nfallback scoring;
+    endif
+    :Update staging with\nseverity + score;
+}
+
+partition "UC-15: Generate Alerts" {
+    :Select entries with\nseverity = HIGH or CRITICAL;
+    while (For each HIGH/CRITICAL entry)
+        :Create alert record\nin database;
+        :Enrich with GeoIP\nand reputation data;
+        if (Enrichment OK?) then (yes)
+            :Attach enrichment\ndata to alert;
+        else (no)
+            :Log enrichment warning;
+        endif
+        :Dispatch notification\nto Blue Team;
+    endwhile
+}
+
+:Log cycle completion\n(processed, alerted, errors);
+
+stop
+
+@enduml

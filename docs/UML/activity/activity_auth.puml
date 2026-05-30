@@ -1,0 +1,74 @@
+@startuml activity_auth
+title HELIX Platform – Authentication Activity Diagram (UC-01 / UC-02)
+
+skinparam shadowing false
+skinparam activityBorderColor #3C3489
+skinparam activityBackgroundColor #FFFFFF
+skinparam activityFontColor #1E1E1C
+skinparam arrowColor #5A50B0
+skinparam noteBackgroundColor #F8F7F4
+skinparam noteBorderColor #CCCAC0
+
+start
+
+:Visitor navigates
+to platform;
+
+fork
+  :Browse public content;
+  note right: UC-21 – no auth required
+fork again
+  :Opens registration form;
+  :Submits username,\nemail, password;
+
+  if (Validation passes?) then (yes)
+    :Hash password (bcrypt);
+    :Insert user record\n(role = learner);
+    :Display success;\nRedirect to login;
+  else (no)
+    if (Duplicate username?) then (yes)
+      :Show "Username taken" error;
+    else (no)
+      if (Weak password?) then (yes)
+        :Show password strength\nrequirements;
+      else (no)
+        :Show validation error;
+      endif
+    endif
+    stop
+  endif
+endfork
+
+:Visitor opens
+login form;
+
+:Submits username
+and password;
+
+if (Credentials valid?) then (yes)
+  if (Account active?) then (yes)
+    :Create PHP session\n(session_id, role, expiry);
+    :Redirect to\nrole-specific dashboard;
+  else (no)
+    :Show "Account deactivated";
+    stop
+  endif
+else (no)
+  :Show "Invalid credentials";
+  stop
+endif
+
+:User accesses\nprotected resource;
+
+if (Session valid?) then (yes)
+  :Load user role and\npermissions;
+  :Authorize request;
+  :Return resource;
+  stop
+else (no)
+  :Return 401 Unauthorized;
+  :Redirect to login;
+  stop
+endif
+
+@enduml

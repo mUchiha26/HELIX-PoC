@@ -1,0 +1,48 @@
+@startuml activity_alert_lifecycle
+title HELIX Platform – Alert Lifecycle Activity Diagram
+
+skinparam shadowing false
+skinparam activityBorderColor #3C3489
+skinparam activityBackgroundColor #FFFFFF
+skinparam activityFontColor #1E1E1C
+skinparam arrowColor #5A50B0
+skinparam noteBackgroundColor #F8F7F4
+skinparam noteBorderColor #CCCAC0
+
+start
+
+:Alert generated\nby detection pipeline\n(status = NEW);
+
+:B Operator views alert\nin dashboard or list;
+
+if (Assess alert) then (False positive)
+  :Dismiss alert;\nRecord dismissal reason;
+  stop
+else (Legitimate threat)
+  :Acknowledge alert;\n(status → OPEN);
+  :Assign to analyst;
+  :Begin investigation;
+endif
+
+partition "Investigation" {
+  :Correlate with\nother events;
+  :Run AI analysis\n(UC-31);
+  :Check log entries\nand anomaly scores;
+
+  if (Root cause found?) then (yes)
+    :Apply remediation;
+    :Resolve alert;\n(status → RESOLVED);
+  else (no)
+    if (False positive\nconfirmed?) then (yes)
+      :Dismiss alert;\nRecord dismissal reason;
+    else (no)
+      :Escalate to\nsenior analyst;
+    endif
+  endif
+}
+
+:Log resolution notes\nand audit trail;
+
+stop
+
+@enduml

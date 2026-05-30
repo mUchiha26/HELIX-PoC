@@ -1,0 +1,123 @@
+@startuml deployment
+title HELIX Platform – Deployment Diagram (PoC)
+
+skinparam shadowing false
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #3C3489
+    FontColor #1E1E1C
+}
+skinparam node {
+    BackgroundColor #F8F7F4
+    BorderColor #CCCAC0
+    FontColor #3C3489
+}
+skinparam database {
+    BackgroundColor #EEEDFE
+    BorderColor #5A50B0
+    FontColor #3C3489
+}
+skinparam artifact {
+    BackgroundColor #D4F5D6
+    BorderColor #0F6E56
+    FontColor #1E1E1C
+}
+skinparam ArrowColor #5A50B0
+skinparam linetype ortho
+
+actor "Browser\n(User)" as browser
+
+node "XAMPP Server\n(Apache + PHP)" as server {
+    artifact "index.php\n(Front Controller)" as fc
+    artifact "AuthMiddleware" as amw
+    artifact "RoleMiddleware" as rmw
+
+    component "Controllers" {
+        artifact "AuthController" as authCtrl
+        artifact "DashboardController" as dashCtrl
+        artifact "AIController" as aiCtrl
+        artifact "UserController" as userCtrl
+        artifact "FIMController" as fimCtrl
+    }
+
+    component "Services" {
+        artifact "AuthService" as authSvc
+        artifact "DashboardService" as dashSvc
+        artifact "AIService" as aiSvc
+        artifact "UserService" as userSvc
+        artifact "FIMService" as fimSvc
+    }
+
+    component "Models" {
+        artifact "User, Session" as userModel
+        artifact "LogEntry, Alert,\nAnomalyScore" as detModels
+        artifact "ScanResult" as scanModel
+        artifact "ChatSession" as chatModel
+        artifact "FIMBaseline,\nFIMScanResult" as fimModels
+    }
+}
+
+node "Client Browser" as client {
+    artifact "HTML / CSS / JS\n(Frontend)" as frontend
+}
+
+database "MySQL\n(helixdb)" as mysql {
+    artifact "users" as tbl_users
+    artifact "log_entries" as tbl_logs
+    artifact "anomaly_scores" as tbl_scores
+    artifact "alerts" as tbl_alerts
+    artifact "chat_sessions" as tbl_chat
+    artifact "scan_results" as tbl_scan
+    artifact "fim_baselines" as tbl_fim_base
+    artifact "fim_scan_results" as tbl_fim_scan
+}
+
+node "Python ML Service" as python {
+    artifact "anomaly_detector.py\n(scikit-learn\nIsolation Forest)" as ml
+}
+
+node "Java Module" as java {
+    artifact "FileIntegrityMonitor.class\n(SHA-256 Hashing)" as fim
+}
+
+node "Cloud Services" as cloud {
+    artifact "OpenAI API\n(gpt-4o-mini)" as openai
+}
+
+' --- Connections ---
+browser --> client : HTTPS
+
+client --> server : REST API calls\n(JSON)
+server --> client : JSON responses
+
+server --> mysql : PDO (prepared statements)
+
+server --> python : exec() / shell_exec()
+python --> server : JSON scores
+
+server --> java : shell_exec()
+java --> server : Scan results
+
+server --> cloud : cURL / HTTP POST
+cloud --> server : AI response
+
+note bottom of server
+  XAMPP bundles Apache + PHP + MySQL.
+  All PHP code runs on a single server
+  for PoC deployment.
+end note
+
+note bottom of python
+  Invoked on-demand after
+  log ingestion. Isolation
+  Forest model loaded
+  from local file.
+end note
+
+note bottom of java
+  Compiled Java classes for
+  SHA-256 hashing and
+  file integrity scanning.
+end note
+
+@enduml

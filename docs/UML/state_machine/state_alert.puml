@@ -16,11 +16,19 @@ skinparam NoteBackgroundColor #F8F7F4
 skinparam NoteBorderColor #CCCAC0
 skinparam NoteFontColor #3A3A38
 
-[*] --> NEW : Detection pipeline\ngenerates alert
+[*] --> NEW : Detection pipeline\ngenerates alert (UC-15)
 
 state NEW {
-    note right: Alert created by UC-15\n(Genrate Alerts)\nSeverity: HIGH or CRITICAL\nStatus: unacknowledged
+    note right: Alert created by UC-15\n(Generate Alerts)\nSeverity: HIGH or CRITICAL\nStatus: unacknowledged
 }
+
+NEW --> DISMISSED : Operator assesses\nfalse positive
+
+state DISMISSED {
+    note right: Alert determined to be\nfalse positive\nClosed without investigation\nAudit trail notes reason
+}
+
+DISMISSED --> [*] : Final state
 
 NEW --> OPEN : Blue Team Operator\nacknowledges alert
 
@@ -36,6 +44,8 @@ state INVESTIGATING {
 
 INVESTIGATING --> RESOLVED : Root cause identified\nRemediation applied
 
+INVESTIGATING --> DISMISSED : Investigation finds\nfalse positive
+
 state RESOLVED {
     note right: Alert closed with\nresolution notes\nAudit trail complete
 }
@@ -45,7 +55,7 @@ RESOLVED --> [*] : Final state
 note bottom of NEW
     Entry: Set created_at timestamp,
     assign default severity from
-    ML scoring (UC-14/UC-16)
+    ML scoring (UC-14 / UC-16)
 end note
 
 note bottom of OPEN
@@ -63,6 +73,12 @@ note bottom of RESOLVED
     Entry: Set resolved_at timestamp,
     record resolution notes,
     update incident status
+end note
+
+note bottom of DISMISSED
+    Entry: Set dismissed_at timestamp,
+    record dismissal reason,
+    no further action required
 end note
 
 @enduml

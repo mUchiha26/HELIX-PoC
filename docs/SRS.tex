@@ -167,11 +167,11 @@
 		\end{center}
 		\vfill
 		\begin{infobox}[title=Executive Summary]
-			HELIX is a modular cybersecurity platform that unifies defensive monitoring,
-			AI-assisted threat analysis, and machine learning anomaly detection. This SRS
-			defines the requirements for the Proof of Concept (PoC) stage, covering
-			authentication, log ingestion, alert visualization, ML scoring, AI assistance,
-			and one Red Team tool integration.
+HELIX is a modular cybersecurity platform that unifies defensive monitoring,
+AI-assisted threat analysis, machine learning anomaly detection, and file integrity
+monitoring. This SRS defines the requirements for the Proof of Concept (PoC) stage,
+covering authentication, log ingestion, alert visualization, ML scoring, AI assistance,
+Red Team tool integration, and file integrity monitoring.
 		\end{infobox}
 		\vspace{1cm}
 		\noindent\colorbox{helixgraylight}{%
@@ -235,14 +235,14 @@
 			Backend / API & PHP & REST API, authentication, business logic \\
 			Database & MySQL (XAMPP) & Data persistence and querying \\
 			ML Service & Python (scikit-learn) & Isolation Forest anomaly detection \\
-			Java Module & Java JDK & Hash scanning and log parsing \\
+ Java Module & Java JDK & SHA-256 hashing and file integrity scanning \\
 			AI Integration & OpenAI API & Alert explanation and analysis \\
 			\bottomrule
 		\end{tabular}
 	\end{center}
 	
 	\section{PoC Scope}
-	The PoC validates core platform viability through seven deliverable modules:
+	The PoC validates core platform viability through eight deliverable modules:
 	\begin{enumerate}
 		\item Authentication with role-based access control (Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner, Visitor)
 		\item Centralized security dashboard with key metrics
@@ -250,7 +250,8 @@
 		\item Alert visualization with severity classification
 		\item ML-based anomaly scoring using Isolation Forest
 		\item AI-powered assistant for alert explanation
-		\item One Red Team tool integration (network port scanner)
+		\item Red Team tool integration (network port scanner)
+		\item File Integrity Monitoring (SHA-256 baseline and verification)
 	\end{enumerate}
 	
 	% ══════════════════════════════════════════════════════════════════════════
@@ -301,6 +302,7 @@
 		\item Apply Isolation Forest ML model to detect anomalous log patterns
 		\item Integrate OpenAI API for natural language alert explanation
 		\item Implement one Red Team tool (network port scanner) with controlled access
+		\item Implement File Integrity Monitoring with SHA-256 baseline and verification
 	\end{itemize}
 	
 	\section{Academic Objectives}
@@ -325,7 +327,7 @@
 	% ══════════════════════════════════════════════════════════════════════════
 	
 	\section{Actor Overview}
-	HELIX defines one abstract generalization actor (\textbf{Authenticated User}), five concrete human actors, one unauthenticated actor, and one secondary system actor:
+	HELIX defines one abstract generalization actor (\textbf{Authenticated User}), five concrete human actors, one unauthenticated actor, and two secondary system actors:
 	
 	\begin{figure}[H]
 		\centering
@@ -342,8 +344,9 @@
 				Purple Team Operator & Hybrid operator & Blue + Red combined view & Primary \\
 				Learner & Authenticated student & Learning materials, notes, progress & Primary \\
 				Visitor & Unauthenticated user & Public content, registration & Primary \\
-				Detection Engine & Autonomous system & ML scoring, alert generation & Secondary \\
-				\bottomrule
+			Detection Engine & Autonomous system & ML scoring, alert generation & Secondary \\
+			AI Service & Internal system & OpenAI-powered AI responses & Secondary \\
+			\bottomrule
 			\end{tabular}
 		\end{sectionbox}
 		\caption{HELIX PoC Actor Summary}
@@ -353,6 +356,7 @@
 	\texttt{Visitor} (unauthenticated); \texttt{Authenticated User} $\rightarrow$ \texttt{Administrator},
 	\texttt{Blue Team Operator}, \texttt{Red Team Operator}, \texttt{Purple Team Operator}, \texttt{Learner};
 	and \texttt{Purple Team Operator} inherits from both \texttt{Blue Team Operator} and \texttt{Red Team Operator}.
+	Secondary system actors (\texttt{Detection Engine}, \texttt{AI Service}) interact with the system boundary externally.
 	
 	\section{Detailed Actor Descriptions}
 	
@@ -457,7 +461,7 @@
 		FR-001 & User login with username and password verification against MySQL database. & H & PoC \\
 		FR-002 & Password hashing using bcrypt before storage. & H & PoC \\
 		FR-003 & PHP session management with role-based access enforcement. & H & PoC \\
-		FR-004 & Eight actors: one abstract (\texttt{Authenticated User}), five concrete authenticated (Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner), one unauthenticated (Visitor), and one secondary system actor (Detection Engine). & H & PoC \\
+		FR-004 & Nine actors: one abstract (\texttt{Authenticated User}), five concrete authenticated (Administrator, Blue Team Operator, Red Team Operator, Purple Team Operator, Learner), one unauthenticated (Visitor), and two secondary system actors (Detection Engine, AI Service). & H & PoC \\
 		FR-005 & Session timeout and logout functionality. & M & PoC \\
 		FR-006 & Protected API endpoints returning HTTP 403 for unauthorized access. & H & PoC \\
 		FR-007 & Visitor can register for a Learner account. & H & PoC \\
@@ -535,7 +539,22 @@
 		\caption{Functional Requirements -- AI Assistant}
 	\end{longtable}
 	
-	\subsection{Module 7 -- Red Team Tool}
+	\subsection{Module 7 -- File Integrity Monitoring}
+\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
+		\toprule
+		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
+		\midrule
+		FR-070 & Create SHA-256 baseline hash snapshot of a target directory via Java module. & H & PoC \\
+		FR-071 & Verify file integrity by comparing current hashes against stored baseline. & H & PoC \\
+		FR-072 & Detect file changes: added, modified, deleted, or unchanged. & H & PoC \\
+		FR-073 & Display scan results with file path, hash, and change status. & M & PoC \\
+		FR-074 & View historical baselines and scan results. & M & PoC \\
+		FR-075 & Accessible to Administrator, Blue Team Operator, and Purple Team Operator roles only. & H & PoC \\
+		\bottomrule
+		\caption{Functional Requirements -- File Integrity Monitoring}
+	\end{longtable}
+
+\subsection{Module 8 -- Red Team Tool}
 	\begin{longtable}{L{1.6cm} L{7.8cm} C{1.2cm} C{1.4cm}}
 		\toprule
 		\textbf{ID} & \textbf{Description} & \textbf{Pri.} & \textbf{Phase} \\
@@ -597,10 +616,10 @@
 	\begin{successbox}[title=Document Summary]
 		This SRS defines the requirements for the HELIX Proof of Concept. It covers
 		the project presentation, context and problem statement, objectives, user
-		roles, and all functional and non-functional requirements. The PoC scope is
-		deliberately focused to ensure a strong, demonstrable academic deliverable
-		within a 3-day timeline, while maintaining a modular architecture that
-		supports future MVP evolution.
+		roles, and all functional and non-functional requirements across eight
+		deliverable modules. The PoC scope is deliberately focused to ensure a
+		strong, demonstrable academic deliverable within a constrained timeline,
+		while maintaining a modular architecture that supports future MVP evolution.
 	\end{successbox}
 	
 \end{document}
