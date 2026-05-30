@@ -25,12 +25,12 @@ Built as an academic proof-of-concept — designed to scale.
 Frontend (HTML/CSS/JS)
         │
         ▼
-  PHP Backend / API
+  api/ (PHP REST API)
         │
-   ┌────┼────────────┐
-   ▼    ▼            ▼
- MySQL  Python ML   Java Module
-        (scikit)    (hash scan)
+   ┌────┼──────────────────┐
+   ▼    ▼                  ▼
+ MySQL  python-module/    java-module/
+        anomaly_detector  HashScanner
               │
               ▼
         OpenAI API
@@ -53,14 +53,14 @@ Frontend (HTML/CSS/JS)
 
 1. Clone the repository
 2. Import `database/schema.sql` into MySQL via phpMyAdmin
-3. Configure database credentials in `backend/config/db.php`
+3. Configure database credentials in `api/Config/.env` (copy `.env.example`)
 4. Install Python dependencies:
    ```bash
    pip install scikit-learn pandas
    ```
-5. Set your OpenAI API key in the configuration
+5. Set your OpenAI API key in `api/Config/.env`
 6. Start Apache and MySQL in XAMPP
-7. Navigate to `http://localhost/HELIX`
+7. Navigate to `http://localhost/HELIX/frontend/`
 
 ---
 
@@ -68,27 +68,21 @@ Frontend (HTML/CSS/JS)
 
 ```
 HELIX/
-├── backend/          # PHP API and business logic
-├── frontend/         # HTML/CSS/JS interface
-├── ml_service/       # Python anomaly detection
-├── java_module/      # Hash scanning utilities
-├── database/         # SQL schema and migrations
-└── docs/             # Technical documentation and UML
+├── api/               # PHP REST API (Controllers, Services, Models)
+├── frontend/          # HTML/CSS/JS interface
+├── python-module/     # Python anomaly detection
+├── java-module/       # SHA-256 hashing and file scanning
+├── database/          # SQL schema and migrations
+└── docs/              # Technical documentation and UML
 ```
 
 ---
 
-## Roadmap
+## Documentation
 
-- [x] Project architecture and design
-- [ ] Authentication + RBAC
-- [ ] Dashboard and metrics
-- [ ] Log ingestion pipeline
-- [ ] Alert visualization
-- [ ] ML anomaly scoring
-- [ ] AI assistant integration
-- [ ] Red Team tool module
-- [ ] UML diagrams and documentation
+- `docs/SRS.tex` — Software Requirements Specification
+- `docs/UML/` — Use Case, Class, Sequence, State Machine, Activity, Deployment diagrams
+- `docs/SDD/API_REFERENCE.md` — Complete REST API route reference
 
 ---
 

@@ -563,6 +563,8 @@ Red Team tool integration, and file integrity monitoring.
 		FR-061 & Display scan results with port number, protocol, and status (open/closed/filtered). & H & PoC \\
 		FR-062 & Persist scan results in MySQL for future reference. & M & PoC \\
 		FR-063 & Accessible to Administrator, Red Team Operator, and Purple Team Operator roles only. & H & PoC \\
+		FR-064 & Hash scan parameters validated with \texttt{escapeshellarg()} before Java subprocess invocation. & H & PoC \\
+		FR-065 & The system SHALL invoke the Java hash-scan module via a sanitized subprocess call with validated input parameters. All arguments MUST pass through \texttt{escapeshellarg()} to prevent command injection. & H & PoC \\
 		\bottomrule
 		\caption{Functional Requirements -- Red Team Tool}
 	\end{longtable}
@@ -571,44 +573,62 @@ Red Team tool integration, and file integrity monitoring.
 	
 	\subsection{Performance}
 	\begin{itemize}
-		\item \textbf{NFR-001}: Dashboard loads within 2 seconds for up to 1,000 log entries.
-		\item \textbf{NFR-002}: ML anomaly scoring completes within 5 seconds for batch of 500 entries.
-		\item \textbf{NFR-003}: Log file upload and parsing completes within 10 seconds for files up to 5 MB.
-		\item \textbf{NFR-004}: AI assistant response returns within 8 seconds.
+		\item \textbf{NFR-001}: Dashboard API endpoint (GET /dashboard/stats) SHALL respond within 500ms at p95 under 5 concurrent users on localhost (XAMPP).
+		\item \textbf{NFR-002}: ML anomaly scoring SHALL complete within 5 seconds for a batch of 500 log entries on the reference hardware (8 GB RAM, Intel i5).
+		\item \textbf{NFR-003}: Log file upload and parsing SHALL complete within 10 seconds for files up to 5 MB (verified by automated upload test).
+		\item \textbf{NFR-004}: AI assistant response SHALL return within 15 seconds (including OpenAI API round-trip) for standard alert-context queries.
 	\end{itemize}
 	
 	\subsection{Security}
 	\begin{itemize}
-		\item \textbf{NFR-010}: Passwords hashed with bcrypt (cost factor $\geq$ 10).
-		\item \textbf{NFR-011}: PHP sessions with secure cookie flags.
-		\item \textbf{NFR-012}: Input validation and sanitization on all user inputs.
-		\item \textbf{NFR-013}: SQL injection prevention via prepared statements (PDO).
-		\item \textbf{NFR-014}: Role-based access enforced on every API endpoint.
+		\item \textbf{NFR-010}: Passwords hashed with bcrypt (cost factor $\geq$ 10). Verified by inspecting password\_hash() calls in source.
+		\item \textbf{NFR-011}: PHP sessions SHALL use HttpOnly + Secure cookie flags. Verified by integration test.
+		\item \textbf{NFR-012}: All user-supplied input SHALL be validated and sanitized before use. All shell\_exec() calls SHALL use escapeshellarg(). Verified by 100\% of unit tests for input validation passing.
+		\item \textbf{NFR-013}: SQL injection prevention via prepared statements (PDO). Zero raw SQL string concatenation with user input. Verified by static analysis.
+		\item \textbf{NFR-014}: All authenticated endpoints SHALL return HTTP 401 for unauthenticated requests. Verified by 100\% of AuthMiddleware unit tests passing.
 	\end{itemize}
 	
 	\subsection{Maintainability}
 	\begin{itemize}
-		\item \textbf{NFR-020}: Modular file structure with clear separation of concerns.
-		\item \textbf{NFR-021}: Consistent naming conventions across all languages.
-		\item \textbf{NFR-022}: Documented API endpoints with input/output specifications.
-		\item \textbf{NFR-023}: Configuration files separated from application logic.
+		\item \textbf{NFR-020}: Modular file structure with clear separation of concerns (Controllers/Services/Models). No PHP function SHALL exceed 40 lines of code.
+		\item \textbf{NFR-021}: Consistent PSR-4 namespace and naming conventions across all PHP files. Verified by automated linting.
+		\item \textbf{NFR-022}: All API endpoints SHALL be documented in \texttt{docs/SDD/API\_REFERENCE.md} with method, route, auth requirements, and role restrictions.
+		\item \textbf{NFR-023}: Configuration files separated from application logic. Sensible defaults provided in \texttt{api/Config/.env.example}.
 	\end{itemize}
 	
 	\subsection{Usability}
 	\begin{itemize}
-		\item \textbf{NFR-030}: Interface functional at 1280x720 minimum resolution.
-		\item \textbf{NFR-031}: Severity-based color coding consistent across all views.
-		\item \textbf{NFR-032}: Clear error messages for failed operations.
-		\item \textbf{NFR-033}: Intuitive navigation between modules.
+		\item \textbf{NFR-030}: Interface SHALL render correctly at 1280x720 minimum resolution without horizontal scrolling.
+		\item \textbf{NFR-031}: Severity-based color coding (Critical=red, High=orange, Medium=yellow, Low=green) consistent across all views.
+		\item \textbf{NFR-032}: All error responses SHALL include a human-readable message in JSON format.
+		\item \textbf{NFR-033}: Navigation between modules SHALL require at most 2 clicks from the dashboard.
 	\end{itemize}
 	
 	\subsection{Deployability}
 	\begin{itemize}
-		\item \textbf{NFR-040}: Runs on XAMPP (Apache + MySQL + PHP) without additional infrastructure.
-		\item \textbf{NFR-041}: Python ML service runs as standalone script invoked by PHP.
-		\item \textbf{NFR-042}: Database schema provided as importable SQL file.
-		\item \textbf{NFR-043}: Configuration via editable config files (no environment variable dependency for PoC).
+		\item \textbf{NFR-040}: Runs on XAMPP (Apache 2.4 + MySQL 8 + PHP 8.x) without additional infrastructure. Verified by clean install on Windows/macOS/Linux.
+		\item \textbf{NFR-041}: Python ML service runs as standalone script invoked by PHP via shell\_exec(). Output SHALL be stdout-only JSON (no direct DB writes from Python).
+		\item \textbf{NFR-042}: Database schema provided as single importable SQL file at \texttt{database/schema.sql}. 
+		\item \textbf{NFR-043}: Configuration via \texttt{api/Config/.env} file with \texttt{.env.example} template provided.
 	\end{itemize}
+	
+	% ══════════════════════════════════════════════════════════════════════════
+	\section*{Out of Scope for PoC}
+	\addcontentsline{toc}{section}{Out of Scope for PoC}
+	\textit{The following capabilities are modelled in the use case diagram for architectural completeness but are NOT implemented in the PoC phase. They are deferred to a future MVP.}
+	
+	\begin{enumerate}
+		\item \textbf{Exploitation Suite (UC-18, UC-19)}: Automated exploit execution and post-exploitation lab environments.
+		\item \textbf{Advanced Incident Management (UC-09)}: Full incident lifecycle with timeline, assignment, and cross-team collaboration.
+		\item \textbf{Report Generation (UC-10)}: Structured PDF report compilation from incident data.
+		\item \textbf{Knowledge Base Moderation Workflow (UC-26)}: Article lifecycle with draft/pending/published/archived states.
+		\item \textbf{Event Participation (UC-30)}: CTF, webinar, and challenge registration with leaderboards.
+		\item \textbf{Detection Rule Engine}: Threshold-based, temporal correlation, and pattern-matching rules for alert generation.
+		\item \textbf{Advanced Subscription Management (UC-06)}: Tiered plan upgrades and premium feature gating.
+		\item \textbf{Cross-Team Collaboration (UC-24, UC-25)}: Shared findings and cross-team annotations on incidents.
+	\end{enumerate}
+	
+	The PoC focuses on 16 core use cases that demonstrate the platform's foundational architecture, with the remaining use cases serving as a documented roadmap for future development.
 	
 	% ══════════════════════════════════════════════════════════════════════════
 	\chapter*{Conclusion}

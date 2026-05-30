@@ -1,4 +1,7 @@
 @startuml usecase
+' F-01: Changed UC-31 <<include>> to <<extend>> from UC-11
+' F-02: Flattened detection pipeline - UC-11 directly includes all sub-UCs
+' F-04: Removed dual inheritance for Purple Team; now single inheritance + explicit permissions
 title HELIX Platform – Use Case Diagram (Comprehensive)
 left to right direction
 
@@ -30,17 +33,18 @@ actor "Red Team Operator" as Red #b71717
 actor "Purple Team Operator" as Purple #8d2cd2
 actor "Learner" as Learner
 
-' Actor inheritance – explicit and maintainable
+' F-04: Single inheritance chain only (no dual inheritance)
 Admin --|> AuthUser
 Blue --|> AuthUser
 Red --|> AuthUser
-Purple --|> Blue
-Purple --|> Red
+Purple --|> AuthUser
 Learner --|> AuthUser
 
 note top of Purple
-  Inherits all Blue and Red
-  capabilities
+  Role has permissions of
+  both Blue and Red teams.
+  Enforced via RBAC matrix,
+  not UML multiple inheritance.
 end note
 
 ' ============================================
@@ -73,12 +77,6 @@ rectangle "HELIX Platform" as System {
         usecase "(UC-16) Use ML Scoring" as UC_MLScoring
     }
 
-    package "File Integrity Monitoring" #FFECD2 {
-        usecase "(UC-34) Create Baseline" as UC_CreateBaseline #FFECD2
-        usecase "(UC-35) Verify Integrity" as UC_VerifyIntegrity #FFECD2
-        usecase "(UC-36) View Scan History" as UC_ScanHistory #FFECD2
-    }
-
     package "Red Team Orchestration" #FFE0E6 {
         usecase "(UC-17) Run Reconnaissance" as UC_Recon #FFE0E6
         usecase "(UC-18) Launch Exploitation" as UC_Exploit #FFE0E6
@@ -108,41 +106,58 @@ rectangle "HELIX Platform" as System {
         usecase "(UC-33) Suggest Attack Methods" as UC_SuggestAttacks #D4F5D6
     }
 
+    package "File Integrity Monitoring" #FFECD2 {
+        usecase "(UC-34) Create Baseline" as UC_CreateBaseline #FFECD2
+        usecase "(UC-35) Verify Integrity" as UC_VerifyIntegrity #FFECD2
+        usecase "(UC-36) View Scan History" as UC_ScanHistory #FFECD2
+    }
+
     ' ============================================
     ' USE CASE RELATIONSHIPS
     ' ============================================
-    ' -- Study & Progress
+    ' F-05: UC-28 <<extend>> UC-27 (notes are optional extension of studying)
     UC_Study ..> UC_Progress : <<include>>
     UC_Notes ..> UC_Study : <<extend>>
 
-    ' -- AI Assistant includes mandatory fix guidance;
-    '    attack suggestions are conditional (Red/Purple only)
+    ' -- AI Assistant: fixes are mandatory, attack suggestions are conditional
     UC_AI ..> UC_ProvideFixes : <<include>>
     UC_AI ..> UC_SuggestAttacks : <<extend>>
-    note right of UC_SuggestAttacks
-      Only activated for Red Team
-      and Purple Team roles
-    end note
 
-    ' -- Detection pipeline: top-down execution flow
-    '    AutoDetection triggers the full pipeline sequentially
+    ' F-02: Flat detection pipeline – UC-11 directly includes each sub-use case
+    '        UC-15 does NOT include UC-14 (avoids diamond inclusion)
     UC_AutoDetection ..> UC_IngestLogs : <<include>>
-    UC_IngestLogs ..> UC_PreFilter : <<include>>
-    UC_PreFilter ..> UC_ScoreAnomalies : <<include>>
-    UC_ScoreAnomalies ..> UC_GenerateAlerts : <<include>>
+    UC_AutoDetection ..> UC_PreFilter : <<include>>
+    UC_AutoDetection ..> UC_ScoreAnomalies : <<include>>
+    UC_AutoDetection ..> UC_GenerateAlerts : <<include>>
     UC_ScoreAnomalies ..> UC_MLScoring : <<include>>
 
-    ' -- FIM sub-flow
+    ' F-01: AI Assistant <<extend>>s Automated Detection (optional enrichment)
+    UC_AI ..> UC_AutoDetection : <<extend>>
+    note right of UC_AI
+      Extension point: after
+      alerts are generated.
+      User may invoke AI
+      for alert context.
+    end note
+
+    ' FIM sub-flow
     UC_VerifyIntegrity ..> UC_CreateBaseline : <<extend>>
 }
 
 ' ============================================
-' SECONDARY ACTOR
+' SECONDARY ACTORS
 ' ============================================
 actor "Detection Engine" as Engine <<system>>
 note right of Engine
   Scheduled / event-triggered
   autonomous pipeline runner
+end note
+
+actor "AI Service" as AISvc <<system>>
+note right of AISvc
+  Internal system actor.
+  Provides OpenAI-powered
+  responses on demand.
 end note
 
 ' ============================================
@@ -164,6 +179,9 @@ Admin --> UC_Configure
 Admin --> UC_SecurityDashboard
 Admin --> UC_ModerateKB
 Admin --> UC_Report
+Admin --> UC_CreateBaseline
+Admin --> UC_VerifyIntegrity
+Admin --> UC_ScanHistory
 
 Blue --> UC_SecurityDashboard
 Blue --> UC_Monitor
@@ -178,17 +196,28 @@ Red --> UC_Post
 Red --> UC_Writeup
 Red --> UC_Exploit
 
+' F-04: Purple Team has explicit links to both Blue and Red UCs
+Purple --> UC_SecurityDashboard
+Purple --> UC_Monitor
+Purple --> UC_Incidents
+Purple --> UC_Report
+Purple --> UC_Recon
+Purple --> UC_Post
+Purple --> UC_Writeup
+Purple --> UC_Exploit
 Purple --> UC_Collaborate
 Purple --> UC_Share
 Purple --> UC_CreateBaseline
 Purple --> UC_VerifyIntegrity
 Purple --> UC_ScanHistory
-' (inherits Blue and Red access – shown via generalization)
 
 Learner --> UC_Study
 Learner --> UC_Events
 
 ' Engine triggers the top-level automated detection use case
 Engine --> UC_AutoDetection
+
+' Secondary system actor links
+AISvc --> UC_AI
 
 @enduml

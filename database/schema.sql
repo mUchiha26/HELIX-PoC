@@ -1,3 +1,4 @@
+-- F-09: Added user_notes, user_progress, articles tables for learner and KB domains
 CREATE DATABASE IF NOT EXISTS helixdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE helixdb;
 
@@ -71,4 +72,36 @@ CREATE TABLE scan_results (
     status       ENUM('open','closed','filtered') NOT NULL,
     scanned_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (performed_by) REFERENCES users(id)
+);
+
+-- Learner domain tables (UC-27, UC-28, UC-29)
+CREATE TABLE IF NOT EXISTS user_notes (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT NOT NULL,
+    content    TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS user_progress (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT NOT NULL,
+    module_name VARCHAR(100) NOT NULL,
+    score       FLOAT DEFAULT 0,
+    completed   BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Knowledge base tables (UC-21, UC-22, UC-23, UC-26)
+CREATE TABLE IF NOT EXISTS articles (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    author_id   INT NOT NULL,
+    title       VARCHAR(255) NOT NULL,
+    content     TEXT NOT NULL,
+    status      ENUM('draft','pending','published','archived') DEFAULT 'draft',
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id)
 );

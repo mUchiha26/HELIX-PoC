@@ -426,10 +426,10 @@ are grouped with their parent for conciseness.
 % ══════════════════════════════════════════════════════════════════════════
 \chapter{Detection Pipeline}
 
-The Detection Engine pipeline is a sequential chain of \texttt{<<include>>} relationships:
-UC-11 (Automated Detection) \texttt{<<include>>} UC-12 (Ingest Logs) $\rightarrow$ UC-13 (Pre-filter Noise) $\rightarrow$
-UC-14 (Score Anomalies) $\rightarrow$ UC-15 (Generate Alerts).
-UC-14 also includes UC-16 (Use ML Scoring).
+The Detection Engine pipeline follows a flat inclusion model: UC-11 (Automated Detection) \texttt{<<include>>}
+UC-12 (Ingest Logs), UC-13 (Pre-filter Noise), UC-14 (Score Anomalies), and UC-15 (Generate Alerts) as
+direct sub-use cases. UC-14 in turn \texttt{<<include>>} UC-16 (Use ML Scoring). UC-15 does NOT include
+UC-14 -- it consumes the scored output as a precondition, avoiding diamond inclusion.
 
 \section{UC-11 -- Automated Detection}
 \begin{ucbox}{UC-11 \quad Automated Detection}
@@ -444,18 +444,19 @@ UC-14 also includes UC-16 (Use ML Scoring).
         \item \texttt{<<include>>} UC-13 -- Pre-filter Noise (processes ingested entries).
         \item \texttt{<<include>>} UC-14 -- Score Anomalies (includes UC-16 ML Scoring).
         \item \texttt{<<include>>} UC-15 -- Generate Alerts for HIGH/CRITICAL events.
+        \item \texttt{<<extend>>} UC-31 -- Use AI Assistant optionally provides alert context enrichment.
         \item System notifies assigned analysts of critical alerts.
     \end{enumerate}
     \textbf{\color{helixpurplemid}Alternatives:}
     \begin{itemize}
         \item \textbf{[Alt-A]} Log source unreachable $\rightarrow$ error logged; pipeline continues.
         \item \textbf{[Alt-B]} ML model unavailable $\rightarrow$ rule-based detection continues.
-        \item \textbf{[Alt-C]} AI service offline $\rightarrow$ alerts generated without AI enrichment.
+        \item \textbf{[Alt-C]} AI enrichment (\texttt{<<extend>>} UC-31) available as optional post-alert extension point.
     \end{itemize}
 \end{ucbox}
 
 \section{UC-12 -- Ingest Logs}
-\begin{ucbox}{UC-12 \quad Ingest Logs \textnormal{(included by UC-13)}}
+\begin{ucbox}{UC-12 \quad Ingest Logs \textnormal{(included by UC-11)}}
     \ucfield{Actors}{Detection Engine}
     \ucphase{PoC}
     \ucfield{Preconditions}{Log source accessible; parser registered.}
@@ -473,7 +474,7 @@ UC-14 also includes UC-16 (Use ML Scoring).
 \end{ucbox}
 
 \section{UC-13 -- Pre-filter Noise}
-\begin{ucbox}{UC-13 \quad Pre-filter Noise \textnormal{(included by UC-14)}}
+\begin{ucbox}{UC-13 \quad Pre-filter Noise \textnormal{(included by UC-11)}}
     \ucfield{Actors}{Detection Engine}
     \ucphase{PoC}
     \ucfield{Preconditions}{Normalised log entries in staging store.}
@@ -491,7 +492,7 @@ UC-14 also includes UC-16 (Use ML Scoring).
 \end{ucbox}
 
 \section{UC-14 -- Score Anomalies}
-\begin{ucbox}{UC-14 \quad Score Anomalies \textnormal{(included by UC-15)}}
+\begin{ucbox}{UC-14 \quad Score Anomalies \textnormal{(included by UC-11)}}
     \ucfield{Actors}{Detection Engine}
     \ucphase{PoC}
     \ucfield{Preconditions}{Filtered events available. ML model loaded.}
@@ -762,7 +763,7 @@ UC-14 also includes UC-16 (Use ML Scoring).
     \textbf{\color{helixpurplemid}Alternatives:}
     \begin{itemize}
         \item \textbf{[Alt-A]} Subscription expired $\rightarrow$ access blocked; redirect to subscribe.
-        \item \textbf{[Alt-B]} Learner wants notes $\rightarrow$ \texttt{<<extend>>} UC-28.
+        \item \textbf{[Alt-B]} Learner wants notes $\rightarrow$ UC-28 (\texttt{<<extend>>}) is activated.
     \end{itemize}
 \end{ucbox}
 
