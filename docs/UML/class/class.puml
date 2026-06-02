@@ -1,6 +1,6 @@
 @startuml class
+top to bottom direction
 title HELIX Platform – Class Diagram (Aligned with db/schema.sql and migrations)
-
 skinparam classAttributeIconSize 8
 skinparam shadowing false
 skinparam roundcorner 8
@@ -12,7 +12,7 @@ skinparam packageBackgroundColor #F8F7F4
 skinparam packageBorderColor #CCCAC0
 skinparam ArrowColor #5A50B0
 skinparam linetype ortho
-skinparam dpi 160
+skinparam dpi 300
 skinparam defaultTextAlignment center
 
 ' ══════════════════════════════════════════════════════════════════════════
@@ -55,6 +55,7 @@ package "Access Control" {
     }
     "User (PoC)" "1" --> "0..*" "Session (PoC)" : creates >
     "User (PoC)" "1" --> "1" Role : assigned >
+    "User (PoC)" -down[hidden]-> "Session (PoC)"
 }
 ' ══════════════════════════════════════════════════════════════════════════
 ' PACKAGE 2: LOG & DETECTION
@@ -120,6 +121,10 @@ package "Log & Detection" #FDF3DC {
         --
         + evaluate(event): boolean
     }
+    "LogEntry (PoC)" -down[hidden]-> "AnomalyScore (PoC)"
+    "AnomalyScore (PoC)" -down[hidden]-> "Alert (PoC)"
+    "Alert (PoC)" -down[hidden]-> "MLModel (PoC)"
+    "MLModel (PoC)" -down[hidden]-> "DetectionRule (Future MVP)"
     "LogEntry (PoC)" "1" --> "0..*" "AnomalyScore (PoC)" : scored as >
     "AnomalyScore (PoC)" "1" --> "0..*" "Alert (PoC)" : triggers >
     "MLModel (PoC)" "1" ..> "*" "AnomalyScore (PoC)" : computes >
@@ -152,6 +157,7 @@ package "Red Team" #FFE0E6 {
         + submit(): void
         + publish(): void
     }
+    "ScanResult (PoC)" -down[hidden]-> "Writeup (Future MVP)"
 }
 ' ══════════════════════════════════════════════════════════════════════════
 ' PACKAGE 4: FILE INTEGRITY MONITORING
@@ -186,6 +192,8 @@ package "File Integrity Monitoring" #FFECD2 {
         + verifyIntegrity(baselineId): List
         + getHistory(userId): List
     }
+    "FIMBaseline (PoC)" -down[hidden]-> "FIMScanResult (PoC)"
+    "FIMScanResult (PoC)" -down[hidden]-> "FileIntegrityMonitor (PoC)"
     "FIMBaseline (PoC)" "1" --> "0..*" "FIMScanResult (PoC)" : verified by >
     "FileIntegrityMonitor (PoC)" ..> "FIMBaseline (PoC)" : manages >
     "User (PoC)" "1" --> "0..*" "FIMBaseline (PoC)" : creates (created_by) >
@@ -214,107 +222,9 @@ package "AI Assistance" #D4F5D6 {
         + summarizeAlert(alert): String
         + suggestRemediation(alert): String
     }
+    "ChatSession (PoC)" -down[hidden]-> "AIService (PoC)"
     "ChatSession (PoC)" "1" ..> "1" "AIService (PoC)" : uses >
     "User (PoC)" "1" --> "0..*" "ChatSession (PoC)" : initiates (user_id) >
-}
-' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 6: INCIDENT MANAGEMENT
-' ══════════════════════════════════════════════════════════════════════════
-package "Incident Management" #E8F4FD {
-    class "Incident (Future MVP)" <<Entity>> {
-        - id: INT
-        - alert_id: INT
-        - assigned_to: INT
-        - status: ENUM(open, investigating, resolved, closed)
-        - priority: ENUM(low, medium, high, critical)
-        - created_at: TIMESTAMP
-        - resolved_at: DATETIME
-        --
-        + assign(analyst): void
-        + transitionStatus(newStatus): void
-        + addNote(note): void
-    }
-    class "IncidentTimeline (Future MVP)" <<Entity>> {
-        - id: INT
-        - incident_id: INT
-        - action: VARCHAR(100)
-        - actor_id: INT
-        - timestamp: DATETIME
-        - details: TEXT
-    }
-    class "Report (Future MVP)" <<Entity>> {
-        - id: INT
-        - incident_id: INT
-        - generated_by: INT
-        - content: TEXT
-        - format: ENUM(pdf, json)
-        - created_at: TIMESTAMP
-        --
-        + generate(): void
-        + export(format): File
-    }
-    "Incident (Future MVP)" "1" --> "1" "Alert (PoC)" : based on >
-    "Incident (Future MVP)" "1" --> "0..*" "IncidentTimeline (Future MVP)" : has >
-    "Incident (Future MVP)" "1" --> "0..*" "Report (Future MVP)" : generates >
-}
-' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 7: KNOWLEDGE BASE
-' ══════════════════════════════════════════════════════════════════════════
-package "Knowledge Base" #F0E6FF {
-    class "Article (Future MVP)" <<Entity>> {
-        - id: INT
-        - author_id: INT
-        - title: VARCHAR(200)
-        - content: TEXT
-        - tags: JSON
-        - status: ENUM(draft, pending, published, archived)
-        - created_at: TIMESTAMP
-        --
-        + submit(): void
-        + approve(): void
-        + archive(): void
-    }
-    class "Tag (Future MVP)" <<Entity>> {
-        - id: INT
-        - name: VARCHAR(50)
-        - category: VARCHAR(30)
-    }
-    "Article (Future MVP)" "*" --> "*" "Tag (Future MVP)" : tagged with >
-}
-' ══════════════════════════════════════════════════════════════════════════
-' PACKAGE 8: LEARNER WORKSPACE
-' ══════════════════════════════════════════════════════════════════════════
-package "Learner Workspace" #FFF8DC {
-    class "PersonalNote (Future MVP)" <<Entity>> {
-        - id: INT
-        - learner_id: INT
-        - content: TEXT
-        - linked_content_id: INT
-        - created_at: TIMESTAMP
-        --
-        + save(): void
-        + update(): void
-        + delete(): void
-    }
-    class "ProgressLog (Future MVP)" <<Entity>> {
-        - id: INT
-        - learner_id: INT
-        - module_id: INT
-        - score: FLOAT
-        - completed_at: TIMESTAMP
-        --
-        + update(progress): void
-        + getSummary(): Map
-    }
-    class "Subscription (Future MVP)" <<Entity>> {
-        - id: INT
-        - user_id: INT
-        - plan: VARCHAR(30)
-        - expires_at: DATETIME
-        --
-        + isActive(): boolean
-        + renew(): void
-    }
 }
 ' ══════════════════════════════════════════════════════════════════════════
 ' PACKAGE 9: SERVICES
@@ -333,23 +243,23 @@ package "Services" {
         + compileTimeline(incidentId): List
         + exportData(): File
     }
+    "DashboardService (PoC)" -down[hidden]-> "ReportService (Future MVP)"
 }
 ' ══════════════════════════════════════════════════════════════════════════
 ' CROSS-PACKAGE RELATIONSHIPS (aligned with schema.sql FKs)
 ' ══════════════════════════════════════════════════════════════════════════
+"User (PoC)" -down[hidden]-> "LogEntry (PoC)"
+"LogEntry (PoC)" -down[hidden]-> "ScanResult (PoC)"
+"ScanResult (PoC)" -down[hidden]-> "FIMBaseline (PoC)"
+"FIMBaseline (PoC)" -down[hidden]-> "ChatSession (PoC)"
+"ChatSession (PoC)" -down[hidden]-> "DashboardService (PoC)"
+
 "User (PoC)" "1" --> "0..*" "LogEntry (PoC)" : ingests (ingested_by) >
 "User (PoC)" "1" --> "0..*" "Alert (PoC)" : assigned to (assigned_to) >
-"User (PoC)" "1" --> "0..*" "Incident (Future MVP)" : assigned to >
 "User (PoC)" "1" --> "0..*" "ScanResult (PoC)" : performs (performed_by) >
-"User (PoC)" "1" --> "0..*" "Article (Future MVP)" : authors >
-"User (PoC)" "1" --> "0..*" "Writeup (Future MVP)" : creates >
-"User (PoC)" "1" --> "0..*" "PersonalNote (Future MVP)" : writes >
-"User (PoC)" "1" --> "0..*" "ProgressLog (Future MVP)" : tracks >
-"User (PoC)" "1" --> "0..1" "Subscription (Future MVP)" : has >
 "DashboardService (PoC)" ..> "Alert (PoC)" : aggregates >
 "DashboardService (PoC)" ..> "LogEntry (PoC)" : counts >
 "DashboardService (PoC)" ..> "MLModel (PoC)" : summarizes >
-"ReportService (Future MVP)" ..> "Incident (Future MVP)" : exports >
 ' ══════════════════════════════════════════════════════════════════════════
 ' NOTES
 ' ══════════════════════════════════════════════════════════════════════════
@@ -383,10 +293,5 @@ note bottom of "DetectionRule (Future MVP)"
   Future MVP: Rule engine with
   threshold, temporal correlation,
   and pattern-matching rules
-end note
-note bottom of "Incident (Future MVP)"
-  Future MVP: Full incident lifecycle
-  with timeline, assignment,
-  and cross-team collaboration
 end note
 @enduml
